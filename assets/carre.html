@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monsieur Carré 🎩</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: radial-gradient(ellipse at center, #1a0833 0%, #050010 100%);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .bg-stars {
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(2px 2px at 20% 30%, #B100FF, transparent),
+      radial-gradient(2px 2px at 60% 70%, #FF2EB3, transparent),
+      radial-gradient(1px 1px at 50% 50%, #00AFFF, transparent),
+      radial-gradient(2px 2px at 80% 10%, #B100FF, transparent),
+      radial-gradient(1px 1px at 10% 90%, #FF2EB3, transparent);
+    z-index: 0; opacity: 0.5; pointer-events: none;
+  }
+  .container {
+    position: relative; z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 18px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HUD */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #B100FF;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(177,0,255,0.4);
+    margin-bottom: 14px;
+    backdrop-filter: blur(8px);
+  }
+  .hud-item { font-weight: bold; font-size: 14px; text-shadow: 0 0 8px currentColor; }
+  .hud-xp { color: #FF2EB3; }
+  .hud-zot { color: #00AFFF; }
+  .hud-phase { color: #FFD700; font-size: 13px; }
+
+  /* ZOT METER */
+  .zot-bar {
+    flex: 1;
+    height: 18px;
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #00AFFF;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .zot-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00FF88, #FFD700, #FF3366);
+    width: 0%;
+    transition: width 0.4s;
+  }
+  .zot-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: bold;
+    text-shadow: 0 0 4px #000;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  /* SCENE */
+  .scene {
+    flex: 1;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid #FF2EB3;
+    border-radius: 22px;
+    padding: 22px 18px;
+    box-shadow: 0 0 35px rgba(255,46,179,0.4);
+    text-align: center;
+    animation: fadeIn 0.5s ease-out;
+    overflow: hidden;
+    position: relative;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(15px)} to{opacity:1} }
+
+  .phase-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #FFD700, #FF8800);
+    color: #000;
+    padding: 4px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    box-shadow: 0 0 12px rgba(255,215,0,0.5);
+  }
+  h1 {
+    color: #B100FF;
+    text-shadow: 0 0 18px #B100FF;
+    font-size: 22px;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .situatie {
+    font-size: 17px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    background: rgba(177,0,255,0.15);
+    padding: 14px 16px;
+    border-radius: 12px;
+    border-left: 4px solid #B100FF;
+    text-align: left;
+  }
+  .situatie .fienoes-tag {
+    color: #FF2EB3;
+    font-weight: bold;
+    text-shadow: 0 0 6px #FF2EB3;
+  }
+  .situatie .juf-tag {
+    color: #FFD700;
+    font-weight: bold;
+    text-shadow: 0 0 6px #FFD700;
+  }
+  .situatie .carre-tag {
+    color: #00AFFF;
+    font-weight: bold;
+    text-shadow: 0 0 6px #00AFFF;
+  }
+
+  .visual-area {
+    margin: 14px 0;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .big-emoji { font-size: 64px; }
+
+  .choices {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 1fr;
+    margin-top: 16px;
+  }
+  @media (min-width: 500px) {
+    .choices.two { grid-template-columns: 1fr 1fr; }
+  }
+  .choice-btn {
+    background: linear-gradient(135deg, rgba(177,0,255,0.3), rgba(255,46,179,0.3));
+    color: #fff;
+    border: 2px solid #FF2EB3;
+    padding: 16px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s;
+    box-shadow: 0 0 12px rgba(255,46,179,0.3);
+    line-height: 1.3;
+  }
+  .choice-btn:hover { transform: translateY(-3px); box-shadow: 0 0 22px rgba(255,46,179,0.7); }
+  .choice-btn:active { transform: scale(0.97); }
+  .choice-btn.good {
+    border-color: #FFD700;
+    box-shadow: 0 0 12px rgba(255,215,0,0.4);
+  }
+  .choice-btn.correct {
+    background: linear-gradient(135deg, #00FF88, #00CC66) !important;
+    border-color: #00FF88 !important;
+    box-shadow: 0 0 25px #00FF88 !important;
+    pointer-events: none;
+  }
+  .choice-btn.wrong {
+    background: linear-gradient(135deg, #FF3366, #990033) !important;
+    border-color: #FF3366 !important;
+    pointer-events: none;
+  }
+
+  /* DRAG & DROP */
+  .dnd-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 14px 0;
+  }
+  .dnd-col h3 {
+    color: #00AFFF;
+    text-shadow: 0 0 8px #00AFFF;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  .dnd-item {
+    background: linear-gradient(135deg, #B100FF, #FF2EB3);
+    color: #fff;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: grab;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(255,46,179,0.4);
+    user-select: none;
+    transition: all 0.2s;
+  }
+  .dnd-item:active { cursor: grabbing; }
+  .dnd-item.matched {
+    background: linear-gradient(135deg, #00FF88, #00CC66);
+    box-shadow: 0 0 20px #00FF88;
+    pointer-events: none;
+  }
+  .dnd-drop {
+    background: rgba(0,175,255,0.15);
+    border: 2px dashed #00AFFF;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 8px;
+    text-align: center;
+    font-size: 32px;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .dnd-drop.over {
+    background: rgba(0,175,255,0.4);
+    border-color: #FFD700;
+    transform: scale(1.05);
+  }
+  .dnd-drop.matched {
+    background: rgba(0,255,136,0.2);
+    border-color: #00FF88;
+    border-style: solid;
+  }
+  .dnd-drop .label {
+    font-size: 13px;
+    color: #00AFFF;
+    margin-top: 4px;
+  }
+
+  /* FEEDBACK */
+  .feedback {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    background: rgba(255,46,179,0.15);
+    border-left: 4px solid #FF2EB3;
+    text-align: left;
+    display: none;
+    line-height: 1.4;
+  }
+  .feedback.show { display: block; animation: slideIn 0.3s; }
+  .feedback.correct {
+    background: rgba(0,255,136,0.15);
+    border-color: #00FF88;
+  }
+  .feedback strong { color: #FF2EB3; }
+  .feedback.correct strong { color: #00FF88; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+
+  /* ZOT-METER ROOK */
+  .zot-rook {
+    position: fixed;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    font-size: 80px;
+    z-index: 200;
+    pointer-events: none;
+    animation: rookFloat 2s ease-out;
+    opacity: 0;
+  }
+  @keyframes rookFloat {
+    0% { opacity: 0; transform: translate(-50%, -100px) scale(0.5); }
+    30% { opacity: 1; transform: translate(-50%, 100px) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -100px) scale(1.5); }
+  }
+
+  /* FIENOES COOLDOWN */
+  .cooldown-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  .cooldown-overlay.show { display: flex; }
+  .cooldown-panel {
+    background: linear-gradient(135deg, #1a0833, #2a0a4a);
+    border: 2px solid #FF2EB3;
+    border-radius: 22px;
+    padding: 26px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 0 50px rgba(255,46,179,0.6);
+  }
+  .cooldown-cat {
+    font-size: 100px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: catBob 1.5s ease-in-out infinite;
+  }
+  .cooldown-cat:hover { transform: scale(1.15); filter: drop-shadow(0 0 20px #FF2EB3); }
+  @keyframes catBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .cooldown-panel h2 {
+    color: #FF2EB3;
+    text-shadow: 0 0 12px #FF2EB3;
+    margin-bottom: 8px;
+  }
+  .cooldown-panel p {
+    color: #fff;
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+  .cooldown-hint {
+    color: #FFD700;
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  /* START / END */
+  .start-screen, .end-screen { text-align: center; padding: 20px 10px; }
+  .start-screen h1 { font-size: 30px; margin-bottom: 8px; }
+  .start-screen .big-emoji-row { font-size: 70px; margin: 18px 0; letter-spacing: 10px; }
+  .start-screen p { font-size: 15px; line-height: 1.5; margin-bottom: 14px; color: #ccc; }
+
+  .badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 16px 0;
+  }
+  .badge-earned {
+    background: linear-gradient(135deg, #FFD700, #FF8800);
+    color: #000;
+    padding: 8px 14px;
+    border-radius: 14px;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 0 15px rgba(255,215,0,0.5);
+  }
+
+  .end-xp {
+    font-size: 56px;
+    color: #FFD700;
+    text-shadow: 0 0 22px #FFD700;
+    margin: 14px 0;
+    font-weight: bold;
+  }
+  .fienoes-quote {
+    background: rgba(255,46,179,0.2);
+    border-left: 4px solid #FF2EB3;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin: 14px 0;
+    font-style: italic;
+    text-align: left;
+    font-size: 14px;
+  }
+  .fienoes-quote strong { color: #FF2EB3; }
+
+  .btn-go {
+    background: linear-gradient(135deg, #B100FF, #FF2EB3);
+    color: #fff; border: none;
+    padding: 14px 30px;
+    font-size: 18px; font-weight: bold;
+    border-radius: 50px; cursor: pointer;
+    box-shadow: 0 0 22px rgba(255,46,179,0.7);
+    font-family: inherit; letter-spacing: 1px;
+    margin-top: 8px;
+  }
+  .btn-go:hover { transform: scale(1.05); box-shadow: 0 0 32px rgba(255,46,179,1); }
+  .btn-go:active { transform: scale(0.98); }
+
+  .placeholder-img {
+    background: rgba(177,0,255,0.1);
+    border: 2px dashed #B100FF;
+    border-radius: 12px;
+    padding: 20px;
+    color: #999;
+    font-size: 12px;
+    text-align: center;
+    margin: 12px auto;
+    max-width: 300px;
+  }
+  .placeholder-img .emoji { font-size: 48px; margin-bottom: 6px; }
+
+  @media (max-width: 500px) {
+    h1 { font-size: 18px; }
+    .situatie { font-size: 15px; }
+    .choice-btn { font-size: 14px; padding: 14px 10px; }
+    .dnd-area { gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-stars"></div>
+
+<div class="container">
+  <div class="hud">
+    <div class="hud-item hud-xp">⚡ <span id="xp">0</span> XP</div>
+    <div class="zot-bar">
+      <div class="zot-fill" id="zot-fill"></div>
+      <div class="zot-label">🤯 Zot-Meter: <span id="zot-val">0</span>%</div>
+    </div>
+    <div class="hud-item hud-phase" id="phase-label">Start</div>
+  </div>
+  <div class="scene" id="scene"></div>
+</div>
+
+<!-- COOLDOWN -->
+<div class="cooldown-overlay" id="cooldown">
+  <div class="cooldown-panel">
+    <div class="cooldown-cat" onclick="cooldown()">🐱</div>
+    <h2>Hoofd staat op ontploffen!</h2>
+    <p>Te veel Frans tegelijk... <strong>Tik op Fienoes</strong> om af te koelen.</p>
+    <div class="cooldown-hint">Tik 3× op de poes 🐱</div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'fien_carre_state';
+
+// ============================================
+// 11 SLIDES
+// ============================================
+const SLIDES = [
+  // FASE 1: De Franse Kortsluiting
+  {
+    phase: "🤯 FASE 1 — De Franse Kortsluiting",
+    title: "Wat zegt de juf?!",
+    situatie: '<span class="juf-tag">De juf zegt:</span> "Un carré est un rectangle." Fien wordt gek!',
+    visual: { type: 'placeholder', emoji: '👩‍🏫', text: 'Juf met Frans op het bord' },
+    type: 'dialog',
+    choices: [
+      { label: '"Hè? Wat zeg je nu?"', xp: 5, fb: 'Eerlijk. Fienoes vindt dat ok.', good: false },
+      { label: '"Ik spreek geen Vormen-Frans!"', xp: 5, fb: 'Stoere reactie! 😏', good: true, zot: 10 }
+    ]
+  },
+  {
+    phase: "🤯 FASE 1",
+    title: "Fienoes fluistert...",
+    situatie: '<span class="fienoes-tag">Fienoes:</span> "Carré betekent vierkant." Wat denkt Fien?',
+    visual: { type: 'placeholder', emoji: '🐱', text: 'Fienoes fluistert in Fien\'s oor' },
+    type: 'mindset',
+    choices: [
+      { label: '"Boeiend... niet dus!"', xp: 5, fb: 'Sassy. Past bij jou.', good: true },
+      { label: '"Ik wil naar huis."', xp: 0, fb: 'Mag ook. Maar Fienoes daagt je uit.', zot: 15 }
+    ]
+  },
+  {
+    phase: "🤯 FASE 1",
+    title: "Match de vormen!",
+    situatie: '<strong>Match het Franse woord met de juiste vorm.</strong>',
+    visual: { type: 'none' },
+    type: 'dnd',
+    pairs: [
+      { word: 'Carré', shape: '🟦', label: 'vierkant' },
+      { word: 'Rectangle', shape: '▬', label: 'rechthoek' }
+    ],
+    reward: { xp: 20, badge: '🇫🇷 Frans-Starter' }
+  },
+
+  // FASE 2: Monsieur Carré
+  {
+    phase: "🎩 FASE 2 — Monsieur Carré",
+    title: "Een chique vierkant!",
+    situatie: '<span class="carre-tag">Monsieur Carré</span> (een chique vierkant met een baret) stapt op Fien af: <strong>"Bonjour Fien!"</strong>',
+    visual: { type: 'placeholder', emoji: '🟦🎩', text: 'Monsieur Carré met baret' },
+    type: 'social',
+    choices: [
+      { label: '"Euh... Hallo?"', xp: 5, fb: 'Voorzichtig. Veilig.', good: false },
+      { label: '"Bonjour!"', xp: 10, fb: 'Top! Je antwoordt in het Frans. 🇫🇷', good: true }
+    ]
+  },
+  {
+    phase: "🎩 FASE 2",
+    title: "Tel de zijden",
+    situatie: '<span class="carre-tag">Monsieur Carré:</span> "J\'ai quatre côtés égaux." Hoeveel zijden zijn dat?',
+    visual: { type: 'placeholder', emoji: '🟦', text: 'Monsieur Carré toont zijn 4 zijden' },
+    type: 'quiz',
+    choices: [
+      { label: '3 zijden', xp: 0, fb: 'Nope. Quatre = 4!', good: false, wrong: true, zot: 20 },
+      { label: '4 zijden', xp: 10, fb: 'Juist! Quatre = 4 in het Frans.', good: true }
+    ]
+  },
+  {
+    phase: "🎩 FASE 2",
+    title: "Fien-Check",
+    situatie: 'Fien weigert Frans te praten. <span class="fienoes-tag">Fienoes daagt haar uit:</span> "Zeg gewoon ja of nee in het Frans!"',
+    visual: { type: 'placeholder', emoji: '🐱👩', text: 'Fienoes daagt Fien uit' },
+    type: 'audio',
+    choices: [
+      { label: '🔊 Zeg "Oui" (Ja)', xp: 10, fb: 'Yes! Oui = Ja. 🇫🇷', good: true, say: 'Oui' },
+      { label: '🔊 Zeg "Non" (Nee)', xp: 5, fb: 'Ook prima — Non = Nee.', say: 'Non' }
+    ]
+  },
+
+  // FASE 3: De Code van de Rechte Hoek
+  {
+    phase: "📐 FASE 3 — De Code",
+    title: "Tel in het Frans",
+    situatie: 'Om de deur te openen moet Fien tellen: <strong>"Un, deux, trois..."</strong> Wat komt erna?',
+    visual: { type: 'placeholder', emoji: '🚪🔢', text: 'Geheime deur met code' },
+    type: 'sequence',
+    choices: [
+      { label: '"...Quatre!" (4)', xp: 10, fb: 'JUIST! Un-deux-trois-quatre = 1-2-3-4. Deur open! 🚪', good: true },
+      { label: '"...Vijf!"', xp: 0, fb: 'Vijf is Nederlands. In het Frans = Quatre.', good: false, zot: 15 }
+    ]
+  },
+  {
+    phase: "📐 FASE 3",
+    title: "Logic Check",
+    situatie: '<span class="carre-tag">Monsieur Carré:</span> "Is een vierkant een speciale rechthoek?"',
+    visual: { type: 'placeholder', emoji: '🟦 = ▬?', text: 'Vierkant vs rechthoek' },
+    type: 'logic',
+    choices: [
+      { label: '"Oui!" (Ja, klopt!)', xp: 15, fb: 'JUIST! Een vierkant IS een rechthoek met gelijke zijden. 🧠', good: true, badge: '🧠 Slimmerik' },
+      { label: '"Non!" (Echt niet)', xp: 0, fb: 'Het IS waar... een vierkant is een speciale rechthoek.', good: false, zot: 20 }
+    ]
+  },
+  {
+    phase: "📐 FASE 3",
+    title: "Hoe voel je je?",
+    situatie: 'Fien leert Frans én meetkunde tegelijk. Haar hoofd...',
+    visual: { type: 'placeholder', emoji: '🤯', text: 'Hoofd op ontploffen' },
+    type: 'emotion',
+    choices: [
+      { label: '💥 Staat op ontploffen', xp: 5, fb: 'Oké! Even diep ademen. Je doet het super.', good: false },
+      { label: '🟦 Is nu een Carré!', xp: 10, fb: 'Hahaha! Vierkant hoofd, maar slim! 😄', good: true }
+    ]
+  },
+
+  // FASE 4: Finale
+  {
+    phase: "🏆 FASE 4 — Finale",
+    title: "Teken je vierkant!",
+    situatie: 'Fien tekent een vierkant met een baret. Hoe noemt ze hem?',
+    visual: { type: 'placeholder', emoji: '🟦🎩✏️', text: 'Fien tekent Carré' },
+    type: 'creative',
+    choices: [
+      { label: '"Le Carré Speciaal"', xp: 10, fb: 'Classy! Frans en chic. 🎩', good: true },
+      { label: '"Vierkante Rik"', xp: 10, fb: 'Hahaha! Mooie mix Nederlands-Frans. 😂', good: true }
+    ]
+  },
+  {
+    phase: "🏆 FASE 4",
+    title: "Eindbeloning",
+    situatie: 'Fien kent nu <strong>4 Franse woorden</strong> (Bonjour, Oui, Quatre, Carré) én de vormen-regel. Welke badge wil je?',
+    visual: { type: 'placeholder', emoji: '🏆', text: 'Eindbeloning' },
+    type: 'reward',
+    choices: [
+      { label: '🇫🇷 Petit Professeur', xp: 20, fb: 'Magnifique! Jij bent een mini-leraar. 🎓', good: true, badge: '🇫🇷 Petit Professeur' },
+      { label: '📐 Shape Master', xp: 20, fb: 'Vormen-meester! Niks ontgaat jou meer. 📐', good: true, badge: '📐 Shape Master' }
+    ]
+  }
+];
+
+// ============================================
+// STATE
+// ============================================
+let xp = 0;
+let zot = 0;
+let phase = 0;
+let badges = [];
+let currentSlide = 0;
+let cooldownClicks = 0;
+
+function updateHud() {
+  document.getElementById('xp').textContent = xp;
+  document.getElementById('zot-val').textContent = zot;
+  document.getElementById('zot-fill').style.width = zot + '%';
+  if (SLIDES[currentSlide]) {
+    document.getElementById('phase-label').textContent = SLIDES[currentSlide].phase.replace(/^[^\s]+\s/, '').slice(0, 20);
+  }
+}
+
+function addZot(amount) {
+  zot = Math.min(100, zot + amount);
+  updateHud();
+  if (zot >= 100) {
+    triggerCooldown();
+  }
+}
+
+function triggerCooldown() {
+  cooldownClicks = 0;
+  document.getElementById('cooldown').classList.add('show');
+}
+
+function cooldown() {
+  cooldownClicks++;
+  const cat = document.querySelector('.cooldown-cat');
+  cat.style.transform = 'scale(1.3) rotate(' + (cooldownClicks * 30) + 'deg)';
+  setTimeout(() => { cat.style.transform = ''; }, 200);
+  if (cooldownClicks >= 3) {
+    zot = 0;
+    updateHud();
+    document.getElementById('cooldown').classList.remove('show');
+  }
+}
+
+// ============================================
+// SPEECH (optioneel)
+// ============================================
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR';
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+// ============================================
+// RENDER
+// ============================================
+function renderStart() {
+  document.getElementById('scene').innerHTML = `
+    <div class="start-screen">
+      <h1>🎩 MONSIEUR CARRÉ 🎩</h1>
+      <div class="phase-badge">FRANS + VORMEN</div>
+      <div class="big-emoji-row">🟦 🎩 🇫🇷</div>
+      <p>Help Fien om Frans te leren én vormen te snappen — samen met <strong>Monsieur Carré</strong> en <span style="color:#FF2EB3;">Fienoes</span>.</p>
+      <p style="font-size:13px; color:#999;">⚠️ Let op de <strong>Zot-Meter</strong>! Te veel fouten = hoofd op ontploffen.</p>
+      <button class="btn-go" onclick="startGame()">START 🚀</button>
+    </div>
+  `;
+}
+
+function startGame() {
+  xp = 0; zot = 0; phase = 0; badges = []; currentSlide = 0;
+  updateHud();
+  renderSlide();
+}
+
+function renderSlide() {
+  if (currentSlide >= SLIDES.length) {
+    renderEnd();
+    return;
+  }
+  const s = SLIDES[currentSlide];
+  const scene = document.getElementById('scene');
+  scene.style.animation = 'none';
+  void scene.offsetWidth;
+  scene.style.animation = 'fadeIn 0.5s ease-out';
+
+  let visualHtml = '';
+  if (s.visual.type === 'placeholder') {
+    visualHtml = `<div class="placeholder-img"><div class="emoji">${s.visual.emoji}</div>${s.visual.text}<br><span style="font-size:10px;color:#666;">[NotebookLM beeld komt hier]</span></div>`;
+  }
+
+  let bodyHtml = '';
+
+  if (s.type === 'dnd') {
+    // Drag & drop
+    const words = [...s.pairs].sort(() => Math.random() - 0.5);
+    const shapes = [...s.pairs].sort(() => Math.random() - 0.5);
+
+    bodyHtml = `
+      <div class="dnd-area">
+        <div class="dnd-col">
+          <h3>🇫🇷 Frans woord</h3>
+          ${words.map((p,i) => `<div class="dnd-item" draggable="true" data-word="${p.word}" id="dnd-${i}">${p.word}</div>`).join('')}
+        </div>
+        <div class="dnd-col">
+          <h3>📐 Vorm</h3>
+          ${shapes.map(p => `<div class="dnd-drop" data-word="${p.word}">${p.shape}<div class="label">${p.label}</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="feedback" id="fb"></div>
+    `;
+  } else {
+    // standaard keuzes
+    bodyHtml = `
+      <div class="choices ${s.choices.length === 2 ? 'two' : ''}">
+        ${s.choices.map((c, i) => `
+          <button class="choice-btn ${c.good ? 'good' : ''}" onclick="kies(${i})">${c.label}</button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+    `;
+  }
+
+  scene.innerHTML = `
+    <div class="phase-badge">${s.phase}</div>
+    <h1>${s.title}</h1>
+    <div class="situatie">${s.situatie}</div>
+    ${visualHtml}
+    ${bodyHtml}
+  `;
+
+  if (s.type === 'dnd') {
+    setupDnD(s);
+  }
+}
+
+function kies(idx) {
+  const s = SLIDES[currentSlide];
+  const c = s.choices[idx];
+
+  // Disable all buttons
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach((b, i) => {
+    if (i === idx) {
+      b.classList.add(c.wrong ? 'wrong' : 'correct');
+    }
+  });
+
+  // XP
+  if (c.xp) { xp += c.xp; }
+  // Zot
+  if (c.zot) { addZot(c.zot); }
+  // Badge
+  if (c.badge && !badges.includes(c.badge)) badges.push(c.badge);
+  // Spreek
+  if (c.say) speak(c.say);
+
+  updateHud();
+
+  // Feedback
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback show ' + (c.good ? 'correct' : '');
+  fb.innerHTML = `<strong>${c.good ? 'JUIST!' : 'OK!'}</strong> ${c.fb}${c.badge ? '<br>🏆 Badge: <strong>' + c.badge + '</strong>' : ''}`;
+
+  setTimeout(() => {
+    currentSlide++;
+    renderSlide();
+  }, 1900);
+}
+
+// ============================================
+// DRAG & DROP
+// ============================================
+let matched = 0;
+function setupDnD(slide) {
+  matched = 0;
+  document.querySelectorAll('.dnd-item').forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('word', item.dataset.word);
+      e.dataTransfer.setData('id', item.id);
+    });
+    // touch support
+    item.addEventListener('touchstart', (e) => { item.dataset.dragging = '1'; });
+    item.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      item.style.position = 'fixed';
+      item.style.left = (t.clientX - 50) + 'px';
+      item.style.top = (t.clientY - 20) + 'px';
+      item.style.zIndex = '1000';
+      // hover detect
+      const target = document.elementFromPoint(t.clientX, t.clientY);
+      document.querySelectorAll('.dnd-drop').forEach(d => d.classList.remove('over'));
+      if (target && target.closest('.dnd-drop')) {
+        target.closest('.dnd-drop').classList.add('over');
+      }
+    }, { passive: false });
+    item.addEventListener('touchend', (e) => {
+      const t = e.changedTouches[0];
+      const target = document.elementFromPoint(t.clientX, t.clientY);
+      const drop = target && target.closest('.dnd-drop');
+      if (drop && drop.dataset.word === item.dataset.word) {
+        dropMatch(item, drop, slide);
+      } else {
+        item.style.position = '';
+        item.style.left = '';
+        item.style.top = '';
+        item.style.zIndex = '';
+      }
+      document.querySelectorAll('.dnd-drop').forEach(d => d.classList.remove('over'));
+    });
+  });
+
+  document.querySelectorAll('.dnd-drop').forEach(drop => {
+    drop.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      drop.classList.add('over');
+    });
+    drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+    drop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      drop.classList.remove('over');
+      const word = e.dataTransfer.getData('word');
+      const itemId = e.dataTransfer.getData('id');
+      const item = document.getElementById(itemId);
+      if (drop.dataset.word === word) {
+        dropMatch(item, drop, slide);
+      } else {
+        // fout — kleine zot+
+        addZot(10);
+        drop.style.borderColor = '#FF3366';
+        setTimeout(() => drop.style.borderColor = '', 500);
+      }
+    });
+  });
+}
+
+function dropMatch(item, drop, slide) {
+  item.classList.add('matched');
+  drop.classList.add('matched');
+  item.style.position = '';
+  item.style.left = '';
+  item.style.top = '';
+  matched++;
+  xp += 10;
+  updateHud();
+  if (matched >= slide.pairs.length) {
+    if (slide.reward) {
+      xp += slide.reward.xp;
+      if (slide.reward.badge && !badges.includes(slide.reward.badge)) badges.push(slide.reward.badge);
+    }
+    updateHud();
+    const fb = document.getElementById('fb');
+    fb.className = 'feedback show correct';
+    fb.innerHTML = `<strong>ALLES JUIST!</strong> +${(slide.reward?.xp || 0)} XP${slide.reward?.badge ? '<br>🏆 Badge: <strong>' + slide.reward.badge + '</strong>' : ''}`;
+    setTimeout(() => { currentSlide++; renderSlide(); }, 1900);
+  }
+}
+
+// ============================================
+// END SCREEN
+// ============================================
+function renderEnd() {
+  let quote = '';
+  if (xp < 50) quote = "Begin is gemaakt. Toch al wat Frans gepikt!";
+  else if (xp < 100) quote = "Niet slecht! Monsieur Carré is trots op je.";
+  else if (xp < 150) quote = "Yes! Jij spreekt al een beetje Frans. 🇫🇷";
+  else quote = "MAGNIFIQUE! Jij bent een echte Petit Professeur! 🎓";
+
+  document.getElementById('scene').innerHTML = `
+    <div class="end-screen">
+      <h1>🎉 BRAVO! 🎉</h1>
+      <div class="end-xp">${xp} XP</div>
+      <div style="margin: 10px 0; color: #00AFFF;">Zot-Meter eindstand: ${zot}%</div>
+      ${badges.length ? `
+        <div style="margin-top:14px;">🏆 <strong>Je badges:</strong></div>
+        <div class="badges-row">
+          ${badges.map(b => `<div class="badge-earned">${b}</div>`).join('')}
+        </div>
+      ` : ''}
+      <div class="fienoes-quote"><strong>Fienoes:</strong> ${quote}</div>
+      <button class="btn-go" onclick="startGame()">🔄 OPNIEUW</button>
+    </div>
+  `;
+}
+
+updateHud();
+renderStart();
+</script>
+</body>
+</html>

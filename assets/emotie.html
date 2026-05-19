@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wat voelt deze smiley?</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: radial-gradient(ellipse at center, #1a0833 0%, #050010 100%);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .bg-stars {
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(2px 2px at 20% 30%, #B100FF, transparent),
+      radial-gradient(2px 2px at 60% 70%, #FF2EB3, transparent),
+      radial-gradient(1px 1px at 50% 50%, #00AFFF, transparent),
+      radial-gradient(2px 2px at 80% 10%, #B100FF, transparent),
+      radial-gradient(1px 1px at 10% 90%, #FF2EB3, transparent);
+    animation: twinkle 4s infinite;
+    z-index: 0; pointer-events: none;
+  }
+  @keyframes twinkle { 0%,100%{opacity:.4} 50%{opacity:1} }
+  .container {
+    position: relative; z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 18px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HUD */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #B100FF;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(177,0,255,0.4);
+    margin-bottom: 18px;
+    backdrop-filter: blur(8px);
+  }
+  .hud-item {
+    font-weight: bold;
+    font-size: 16px;
+    text-shadow: 0 0 8px currentColor;
+  }
+  .hud-score { color: #FF2EB3; }
+  .hud-streak { color: #FFD700; }
+  .hud-high { color: #00AFFF; }
+
+  /* SCENE */
+  .scene {
+    flex: 1;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid #FF2EB3;
+    border-radius: 22px;
+    padding: 26px 20px;
+    box-shadow: 0 0 35px rgba(255,46,179,0.4);
+    text-align: center;
+    animation: fadeIn 0.4s ease-out;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+
+  h1 {
+    color: #B100FF;
+    text-shadow: 0 0 18px #B100FF;
+    font-size: 26px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .subtitle {
+    color: #00AFFF;
+    text-shadow: 0 0 10px #00AFFF;
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  /* SMILEY */
+  .smiley-wrap {
+    margin: 20px auto;
+    width: 220px;
+    height: 220px;
+    position: relative;
+    animation: bounceIn 0.5s ease-out;
+  }
+  @keyframes bounceIn {
+    0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(3deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .smiley-wrap.shake { animation: shake 0.5s ease-in-out; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-15px) rotate(-5deg); }
+    40% { transform: translateX(15px) rotate(5deg); }
+    60% { transform: translateX(-10px) rotate(-3deg); }
+    80% { transform: translateX(10px) rotate(3deg); }
+  }
+  .smiley-wrap.correct { animation: celebrate 0.6s ease-out; }
+  @keyframes celebrate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1); }
+  }
+  .smiley-wrap svg {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 0 20px var(--glow, #FFD700));
+  }
+
+  /* PROMPT */
+  .prompt {
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 18px;
+    font-weight: 600;
+  }
+
+  /* OPTIONS */
+  .options {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .opt-btn {
+    background: linear-gradient(135deg, rgba(177,0,255,0.25), rgba(255,46,179,0.25));
+    color: #fff;
+    border: 2px solid #FF2EB3;
+    padding: 16px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: bold;
+    transition: all 0.15s;
+    box-shadow: 0 0 12px rgba(255,46,179,0.3);
+  }
+  .opt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 22px rgba(255,46,179,0.6);
+  }
+  .opt-btn:active { transform: scale(0.97); }
+  .opt-btn.correct {
+    background: linear-gradient(135deg, #00FF88, #00CC66);
+    border-color: #00FF88;
+    box-shadow: 0 0 25px #00FF88;
+    pointer-events: none;
+  }
+  .opt-btn.wrong {
+    background: linear-gradient(135deg, #FF3366, #CC0033);
+    border-color: #FF3366;
+    box-shadow: 0 0 25px #FF3366;
+    animation: wrongShake 0.4s;
+    pointer-events: none;
+  }
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  /* FEEDBACK */
+  .feedback {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    min-height: 24px;
+    background: rgba(255,46,179,0.15);
+    border-left: 4px solid #FF2EB3;
+    text-align: left;
+    display: none;
+  }
+  .feedback.show { display: block; animation: slideIn 0.3s; }
+  .feedback.correct {
+    background: rgba(0,255,136,0.15);
+    border-color: #00FF88;
+  }
+  .feedback strong { color: #FF2EB3; }
+  .feedback.correct strong { color: #00FF88; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+
+  /* START / GAME OVER */
+  .start-screen, .end-screen {
+    text-align: center;
+    padding: 30px 10px;
+  }
+  .start-screen h1 { font-size: 30px; }
+  .start-screen .big-emoji {
+    font-size: 100px;
+    margin: 16px 0;
+    text-shadow: 0 0 30px #FFD700;
+  }
+  .start-screen p {
+    font-size: 16px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .end-score {
+    font-size: 64px;
+    color: #FFD700;
+    text-shadow: 0 0 24px #FFD700;
+    margin: 16px 0;
+    font-weight: bold;
+  }
+  .end-streak {
+    font-size: 20px;
+    color: #FF2EB3;
+    text-shadow: 0 0 12px #FF2EB3;
+    margin-bottom: 14px;
+  }
+  .end-new-high {
+    background: linear-gradient(135deg, #FFD700, #FF8800);
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 14px;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+  .fienoes-quote {
+    background: rgba(255,46,179,0.2);
+    border-left: 4px solid #FF2EB3;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin: 14px 0;
+    font-style: italic;
+    text-align: left;
+    font-size: 15px;
+  }
+  .fienoes-quote strong { color: #FF2EB3; }
+
+  .btn-go {
+    background: linear-gradient(135deg, #B100FF, #FF2EB3);
+    color: #fff;
+    border: none;
+    padding: 16px 36px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(255,46,179,0.7);
+    font-family: inherit;
+    letter-spacing: 1px;
+    margin-top: 10px;
+  }
+  .btn-go:hover { transform: scale(1.05); box-shadow: 0 0 35px rgba(255,46,179,1); }
+  .btn-go:active { transform: scale(0.98); }
+
+  .level-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #B100FF, #FF2EB3);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    box-shadow: 0 0 12px rgba(255,46,179,0.5);
+  }
+
+  @media (max-width: 500px) {
+    .smiley-wrap { width: 180px; height: 180px; }
+    h1 { font-size: 22px; }
+    .prompt { font-size: 18px; }
+    .opt-btn { font-size: 15px; padding: 14px 8px; }
+    .end-score { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-stars"></div>
+
+<div class="container">
+  <div class="hud">
+    <div class="hud-item hud-score">🏆 <span id="score">0</span></div>
+    <div class="hud-item hud-streak">🔥 <span id="streak">0</span></div>
+    <div class="hud-item hud-high">⭐ <span id="high">0</span></div>
+  </div>
+  <div class="scene" id="scene"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'fien_emotie_high';
+
+// 10 emoties + smiley svg's
+const EMOTIES = [
+  {
+    naam: "BLIJ",
+    glow: "#FFD700",
+    color: "#FFE100",
+    svg: (mouth) => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="${mouth.faceColor || '#FFE100'}" stroke="#000" stroke-width="4"/>
+      <ellipse cx="72" cy="85" rx="8" ry="10" fill="#000"/>
+      <ellipse cx="128" cy="85" rx="8" ry="10" fill="#000"/>
+      <circle cx="74" cy="82" r="3" fill="#fff"/>
+      <circle cx="130" cy="82" r="3" fill="#fff"/>
+      <path d="M65,120 Q100,155 135,120" stroke="#000" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="55" cy="125" rx="10" ry="6" fill="#FF99CC" opacity="0.6"/>
+      <ellipse cx="145" cy="125" rx="10" ry="6" fill="#FF99CC" opacity="0.6"/>
+    `,
+    uitleg: "Een grote glimlach en blije oogjes. Iemand is BLIJ."
+  },
+  {
+    naam: "VERDRIETIG",
+    glow: "#00AFFF",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FFE100" stroke="#000" stroke-width="4"/>
+      <path d="M62,78 Q72,72 82,78" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M118,78 Q128,72 138,78" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="72" cy="92" rx="6" ry="8" fill="#000"/>
+      <ellipse cx="128" cy="92" rx="6" ry="8" fill="#000"/>
+      <ellipse cx="72" cy="105" rx="5" ry="10" fill="#00AFFF"/>
+      <ellipse cx="128" cy="105" rx="5" ry="10" fill="#00AFFF"/>
+      <path d="M65,140 Q100,115 135,140" stroke="#000" stroke-width="5" fill="none" stroke-linecap="round"/>
+    `,
+    uitleg: "Een omgekeerde mond en tranen. Iemand is VERDRIETIG."
+  },
+  {
+    naam: "BOOS",
+    glow: "#FF3366",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FF6644" stroke="#000" stroke-width="4"/>
+      <path d="M55,75 L88,90" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+      <path d="M145,75 L112,90" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+      <ellipse cx="78" cy="100" rx="6" ry="8" fill="#000"/>
+      <ellipse cx="122" cy="100" rx="6" ry="8" fill="#000"/>
+      <path d="M65,140 Q100,125 135,140" stroke="#000" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M40,60 Q35,70 45,70" stroke="#fff" stroke-width="3" fill="none"/>
+      <path d="M155,60 Q160,70 150,70" stroke="#fff" stroke-width="3" fill="none"/>
+    `,
+    uitleg: "Gefronste wenkbrauwen en een strakke mond. Iemand is BOOS."
+  },
+  {
+    naam: "BANG",
+    glow: "#9B7BFF",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FFE100" stroke="#000" stroke-width="4"/>
+      <circle cx="72" cy="85" r="14" fill="#fff" stroke="#000" stroke-width="3"/>
+      <circle cx="128" cy="85" r="14" fill="#fff" stroke="#000" stroke-width="3"/>
+      <circle cx="72" cy="85" r="6" fill="#000"/>
+      <circle cx="128" cy="85" r="6" fill="#000"/>
+      <circle cx="74" cy="83" r="2" fill="#fff"/>
+      <circle cx="130" cy="83" r="2" fill="#fff"/>
+      <ellipse cx="100" cy="135" rx="12" ry="18" fill="#000"/>
+      <ellipse cx="100" cy="135" rx="8" ry="14" fill="#660033"/>
+      <path d="M45,70 Q50,60 60,65" stroke="#000" stroke-width="3" fill="none"/>
+      <path d="M155,70 Q150,60 140,65" stroke="#000" stroke-width="3" fill="none"/>
+    `,
+    uitleg: "Grote ogen en open mond. Iemand is BANG."
+  },
+  {
+    naam: "VERLIEFD",
+    glow: "#FF2EB3",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FFE100" stroke="#000" stroke-width="4"/>
+      <path d="M62,85 Q72,75 72,85 Q82,75 82,85 Q72,98 72,98 Q62,85 62,85 Z" fill="#FF2EB3" stroke="#000" stroke-width="2"/>
+      <path d="M118,85 Q128,75 128,85 Q138,75 138,85 Q128,98 128,98 Q118,85 118,85 Z" fill="#FF2EB3" stroke="#000" stroke-width="2"/>
+      <path d="M65,120 Q100,150 135,120" stroke="#000" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="55" cy="125" rx="10" ry="6" fill="#FF99CC"/>
+      <ellipse cx="145" cy="125" rx="10" ry="6" fill="#FF99CC"/>
+      <text x="40" y="55" font-size="20" fill="#FF2EB3">💕</text>
+      <text x="150" y="60" font-size="16" fill="#FF2EB3">💖</text>
+    `,
+    uitleg: "Hartjes-ogen en glimlach. Iemand is VERLIEFD."
+  },
+  {
+    naam: "MOE",
+    glow: "#6699CC",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FFE100" stroke="#000" stroke-width="4"/>
+      <path d="M60,88 Q72,92 84,88" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M116,88 Q128,92 140,88" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="72" cy="105" rx="3" ry="2" fill="#666"/>
+      <ellipse cx="128" cy="105" rx="3" ry="2" fill="#666"/>
+      <path d="M70,140 L130,140" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+      <text x="140" y="50" font-size="28" fill="#00AFFF">z</text>
+      <text x="155" y="35" font-size="20" fill="#00AFFF">z</text>
+    `,
+    uitleg: "Halfdichte ogen en slappe mond. Iemand is MOE."
+  },
+  {
+    naam: "VERRAST",
+    glow: "#FFAA00",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FFE100" stroke="#000" stroke-width="4"/>
+      <circle cx="72" cy="85" r="12" fill="#fff" stroke="#000" stroke-width="3"/>
+      <circle cx="128" cy="85" r="12" fill="#fff" stroke="#000" stroke-width="3"/>
+      <circle cx="72" cy="85" r="5" fill="#000"/>
+      <circle cx="128" cy="85" r="5" fill="#000"/>
+      <ellipse cx="100" cy="135" rx="14" ry="20" fill="#000"/>
+      <ellipse cx="100" cy="135" rx="10" ry="16" fill="#990033"/>
+      <line x1="40" y1="40" x2="50" y2="50" stroke="#FFAA00" stroke-width="3"/>
+      <line x1="160" y1="40" x2="150" y2="50" stroke="#FFAA00" stroke-width="3"/>
+      <line x1="30" y1="70" x2="40" y2="70" stroke="#FFAA00" stroke-width="3"/>
+      <line x1="170" y1="70" x2="160" y2="70" stroke="#FFAA00" stroke-width="3"/>
+    `,
+    uitleg: "Grote ogen wijd open en mond rond. Iemand is VERRAST."
+  },
+  {
+    naam: "VIES",
+    glow: "#88CC44",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#AADD66" stroke="#000" stroke-width="4"/>
+      <path d="M62,80 Q72,72 82,80" stroke="#000" stroke-width="4" fill="none"/>
+      <path d="M118,80 Q128,72 138,80" stroke="#000" stroke-width="4" fill="none"/>
+      <ellipse cx="72" cy="95" rx="5" ry="7" fill="#000"/>
+      <ellipse cx="128" cy="95" rx="5" ry="7" fill="#000"/>
+      <path d="M65,140 Q80,125 100,135 Q120,125 135,140" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M95,110 Q100,118 105,110" stroke="#000" stroke-width="3" fill="none"/>
+    `,
+    uitleg: "Mond getrokken en groene kleur. Iemand vindt iets VIES."
+  },
+  {
+    naam: "TROTS",
+    glow: "#B100FF",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FFE100" stroke="#000" stroke-width="4"/>
+      <path d="M55,75 L82,85" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+      <path d="M145,75 L118,85" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="72" cy="92" rx="5" ry="6" fill="#000"/>
+      <ellipse cx="128" cy="92" rx="5" ry="6" fill="#000"/>
+      <path d="M68,120 Q100,140 132,120" stroke="#000" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M55,50 L65,60 L75,50 L85,60 L95,50 L105,60 L115,50 L125,60 L135,50 L145,60" stroke="#FFD700" stroke-width="3" fill="none"/>
+      <text x="155" y="55" font-size="20">⭐</text>
+      <text x="30" y="55" font-size="20">⭐</text>
+    `,
+    uitleg: "Glimlach en hoofd hoog. Iemand is TROTS."
+  },
+  {
+    naam: "RUSTIG",
+    glow: "#00FFCC",
+    svg: () => `
+      <ellipse cx="100" cy="100" rx="85" ry="85" fill="#FFE100" stroke="#000" stroke-width="4"/>
+      <path d="M60,85 Q72,90 84,85" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M116,85 Q128,90 140,85" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M75,125 Q100,135 125,125" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <circle cx="50" cy="60" r="6" fill="#00FFCC" opacity="0.5"/>
+      <circle cx="150" cy="60" r="6" fill="#00FFCC" opacity="0.5"/>
+      <circle cx="40" cy="100" r="4" fill="#00FFCC" opacity="0.4"/>
+      <circle cx="160" cy="100" r="4" fill="#00FFCC" opacity="0.4"/>
+    `,
+    uitleg: "Zachte glimlach en gesloten oogjes. Iemand is RUSTIG."
+  }
+];
+
+let score = 0;
+let streak = 0;
+let highScore = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
+let currentEmotion = null;
+let isAnswering = false;
+
+function updateHud() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('streak').textContent = streak;
+  document.getElementById('high').textContent = highScore;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startScreen() {
+  const scene = document.getElementById('scene');
+  scene.innerHTML = `
+    <div class="start-screen">
+      <h1>WAT VOELT DEZE SMILEY?</h1>
+      <div class="subtitle">benoem het gevoel — zo ver mogelijk komen!</div>
+      <div class="big-emoji">😊😢😡</div>
+      <p>Klik op de juiste emotie.<br>1× fout = game over.<br>Hoe verder je komt, hoe meer punten.</p>
+      <p style="font-size:13px; color:#888;">High score: <strong style="color:#FFD700;">${highScore}</strong></p>
+      <button class="btn-go" onclick="startGame()">START 🚀</button>
+    </div>
+  `;
+}
+
+function startGame() {
+  score = 0;
+  streak = 0;
+  updateHud();
+  nextRound();
+}
+
+function nextRound() {
+  isAnswering = false;
+  // kies emotie
+  currentEmotion = EMOTIES[Math.floor(Math.random() * EMOTIES.length)];
+  // 4 opties: juiste + 3 random andere
+  const fout = shuffle(EMOTIES.filter(e => e.naam !== currentEmotion.naam)).slice(0, 3);
+  const opties = shuffle([currentEmotion, ...fout]);
+
+  // level
+  const level = Math.floor(streak / 5) + 1;
+
+  const scene = document.getElementById('scene');
+  scene.innerHTML = `
+    <div class="level-badge">LEVEL ${level} · streak: ${streak}</div>
+    <div class="prompt">Hoe voelt deze smiley?</div>
+    <div class="smiley-wrap" id="smiley" style="--glow: ${currentEmotion.glow};">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        ${currentEmotion.svg({})}
+      </svg>
+    </div>
+    <div class="options">
+      ${opties.map(o => `
+        <button class="opt-btn" data-name="${o.naam}" onclick="kies('${o.naam}', this)">${o.naam}</button>
+      `).join('')}
+    </div>
+    <div class="feedback" id="fb"></div>
+  `;
+}
+
+function kies(naam, btn) {
+  if (isAnswering) return;
+  isAnswering = true;
+  const correct = naam === currentEmotion.naam;
+  const smiley = document.getElementById('smiley');
+  const fb = document.getElementById('fb');
+
+  if (correct) {
+    btn.classList.add('correct');
+    smiley.classList.add('correct');
+    streak++;
+    // punten: meer voor langere streak
+    const punten = 10 + (streak - 1) * 2;
+    score += punten;
+    updateHud();
+    fb.className = 'feedback show correct';
+    fb.innerHTML = `<strong>JUIST! +${punten}</strong> — ${currentEmotion.uitleg}`;
+    setTimeout(nextRound, 1100);
+  } else {
+    btn.classList.add('wrong');
+    // toon juiste antwoord ook
+    document.querySelectorAll('.opt-btn').forEach(b => {
+      if (b.dataset.name === currentEmotion.naam) b.classList.add('correct');
+    });
+    smiley.classList.add('shake');
+    fb.className = 'feedback show';
+    fb.innerHTML = `<strong>OEPS!</strong> Het was <strong style="color:#00FF88;">${currentEmotion.naam}</strong>. ${currentEmotion.uitleg}`;
+    setTimeout(endGame, 1800);
+  }
+}
+
+function endGame() {
+  let isNewHigh = false;
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem(STORAGE_KEY, String(highScore));
+    isNewHigh = true;
+  }
+  updateHud();
+
+  // Fienoes quote
+  let quote = '';
+  if (streak === 0) quote = "Au. Eerste vraag al fout. Toch eens proberen?";
+  else if (streak < 3) quote = "Ja, een begin. Volgende keer langer volhouden.";
+  else if (streak < 7) quote = "Niet slecht. Je kent je emoties.";
+  else if (streak < 12) quote = "Yes! Jij snapt mensen écht.";
+  else if (streak < 20) quote = "Whoa. Emotie-expert.";
+  else quote = "LEGENDE. Jij voelt mensen aan zoals ik muizen ruik. 🏆";
+  if (isNewHigh) quote += " En een record ook nog!";
+
+  const scene = document.getElementById('scene');
+  scene.innerHTML = `
+    <div class="end-screen">
+      <h1>GAME OVER</h1>
+      ${isNewHigh ? '<div class="end-new-high">🌟 NIEUWE HIGH SCORE!</div>' : ''}
+      <div class="end-score">${score}</div>
+      <div class="end-streak">🔥 streak: ${streak} op rij</div>
+      <div class="fienoes-quote"><strong>Fienoes:</strong> ${quote}</div>
+      <button class="btn-go" onclick="startGame()">🔄 OPNIEUW</button>
+    </div>
+  `;
+}
+
+updateHud();
+startScreen();
+</script>
+</body>
+</html>

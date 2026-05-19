@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fienoes Sloop-Sessie 🐱💥</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: radial-gradient(ellipse at center, #1a0833 0%, #050010 100%);
+    color: #fff;
+    height: 100vh;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .bg-stars {
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+      radial-gradient(2px 2px at 50% 40%, #fff, transparent),
+      radial-gradient(2px 2px at 15% 90%, #B100FF, transparent),
+      radial-gradient(1px 1px at 80% 30%, #FF2EB3, transparent),
+      radial-gradient(2px 2px at 40% 15%, #00AFFF, transparent);
+    z-index: 0; opacity: 0.5; pointer-events: none;
+  }
+
+  #game {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  /* HUD */
+  .hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .hud-box {
+    background: rgba(0,0,0,0.6);
+    border: 2px solid #B100FF;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 0 15px rgba(177,0,255,0.5);
+    backdrop-filter: blur(6px);
+  }
+  .hud-score { color: #FF2EB3; text-shadow: 0 0 10px #FF2EB3; }
+  .hud-time { color: #00AFFF; text-shadow: 0 0 10px #00AFFF; }
+  .hud-time.urgent { color: #FF3366; text-shadow: 0 0 12px #FF3366; animation: pulse 0.5s infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+  /* DOELWITTEN */
+  .target {
+    position: absolute;
+    width: 90px;
+    height: 110px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    will-change: transform, left;
+  }
+  .target.hit {
+    animation: hitFly 0.6s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes hitFly {
+    0% { transform: scale(1) rotate(0); opacity: 1; }
+    50% { transform: scale(1.3) rotate(180deg) translateY(-50px); opacity: 1; }
+    100% { transform: scale(0) rotate(720deg) translateY(200px); opacity: 0; }
+  }
+  .target svg { width: 100%; height: 100%; filter: drop-shadow(0 0 8px var(--glow, #fff)); }
+  .target .label {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: var(--glow, #fff);
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+    text-shadow: 0 0 4px currentColor;
+    border: 1px solid currentColor;
+  }
+
+  /* FIENOES */
+  #fienoes {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    cursor: grab;
+    z-index: 5;
+    transition: bottom 0.05s, left 0.05s;
+    will-change: transform;
+  }
+  #fienoes:active { cursor: grabbing; }
+  #fienoes.flying {
+    transition: top 0.5s cubic-bezier(0.4, 0, 0.6, 1), left 0.5s ease-out;
+    z-index: 8;
+  }
+
+  /* AIM LINE */
+  #aim-line {
+    position: absolute;
+    pointer-events: none;
+    z-index: 4;
+    display: none;
+  }
+
+  /* SCORE POPUP */
+  .score-pop {
+    position: absolute;
+    font-size: 32px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 20;
+    animation: scorePop 1s ease-out forwards;
+    text-shadow: 0 0 12px currentColor;
+  }
+  @keyframes scorePop {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { transform: translateY(-20px) scale(1.3); opacity: 1; }
+    100% { transform: translateY(-100px) scale(1); opacity: 0; }
+  }
+
+  /* OVERLAY */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  .overlay.hide { display: none; }
+  .panel {
+    background: linear-gradient(135deg, #1a0833, #2a0a4a);
+    border: 2px solid #FF2EB3;
+    border-radius: 22px;
+    padding: 26px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(255,46,179,0.6);
+  }
+  .panel h1 {
+    font-size: 30px;
+    color: #B100FF;
+    text-shadow: 0 0 20px #B100FF;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+  .panel h2 {
+    color: #FF2EB3;
+    text-shadow: 0 0 12px #FF2EB3;
+    margin-bottom: 14px;
+  }
+  .panel p { font-size: 16px; line-height: 1.5; margin-bottom: 12px; }
+  .panel .target-list {
+    background: rgba(177,0,255,0.15);
+    border-radius: 12px;
+    padding: 12px;
+    margin: 14px 0;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .panel .final-score {
+    font-size: 48px;
+    color: #FFD700;
+    text-shadow: 0 0 20px #FFD700;
+    margin: 10px 0;
+    font-weight: bold;
+  }
+  .panel .high {
+    color: #00AFFF;
+    text-shadow: 0 0 10px #00AFFF;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .btn-go {
+    background: linear-gradient(135deg, #B100FF, #FF2EB3);
+    color: #fff;
+    border: none;
+    padding: 16px 36px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(255,46,179,0.7);
+    font-family: inherit;
+    letter-spacing: 1px;
+    margin-top: 10px;
+  }
+  .btn-go:hover { transform: scale(1.05); box-shadow: 0 0 35px rgba(255,46,179,1); }
+  .btn-go:active { transform: scale(0.97); }
+
+  .fienoes-quote {
+    background: rgba(255,46,179,0.2);
+    border-left: 4px solid #FF2EB3;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin: 14px 0;
+    font-style: italic;
+    text-align: left;
+    font-size: 15px;
+  }
+  .fienoes-quote strong { color: #FF2EB3; }
+</style>
+</head>
+<body>
+<div class="bg-stars"></div>
+
+<div id="game">
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-box hud-score">🏆 <span id="score">0</span></div>
+    <div class="hud-box hud-time" id="time-box">⏱ <span id="time">30</span>s</div>
+  </div>
+
+  <!-- AIM LINE -->
+  <svg id="aim-line">
+    <line x1="0" y1="0" x2="0" y2="0" stroke="#FF2EB3" stroke-width="3" stroke-dasharray="8,8" opacity="0.7"/>
+  </svg>
+
+  <!-- FIENOES -->
+  <div id="fienoes" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- shadow -->
+      <ellipse cx="50" cy="92" rx="25" ry="4" fill="#000" opacity="0.3"/>
+      <!-- body -->
+      <ellipse cx="50" cy="65" rx="28" ry="22" fill="#444" stroke="#222" stroke-width="2"/>
+      <ellipse cx="50" cy="68" rx="18" ry="14" fill="#fff"/>
+      <!-- head -->
+      <circle cx="50" cy="35" r="22" fill="#444" stroke="#222" stroke-width="2"/>
+      <!-- ears -->
+      <polygon points="32,22 30,8 42,18" fill="#444" stroke="#222" stroke-width="2"/>
+      <polygon points="68,22 70,8 58,18" fill="#444" stroke="#222" stroke-width="2"/>
+      <polygon points="34,18 32,11 39,16" fill="#FF99CC"/>
+      <polygon points="66,18 68,11 61,16" fill="#FF99CC"/>
+      <!-- face white -->
+      <ellipse cx="50" cy="42" rx="14" ry="10" fill="#fff"/>
+      <!-- eyes -->
+      <ellipse cx="42" cy="32" rx="4" ry="5" fill="#9FFF00"/>
+      <ellipse cx="58" cy="32" rx="4" ry="5" fill="#9FFF00"/>
+      <ellipse cx="42" cy="32" rx="1.5" ry="4" fill="#000"/>
+      <ellipse cx="58" cy="32" rx="1.5" ry="4" fill="#000"/>
+      <!-- mischievous mouth -->
+      <path d="M44,44 Q50,49 56,44" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M50,44 Q47,47 45,46" stroke="#000" stroke-width="1.5" fill="none"/>
+      <!-- nose -->
+      <path d="M47,40 L53,40 L50,43 Z" fill="#FF2EB3"/>
+      <!-- paws -->
+      <ellipse cx="35" cy="85" rx="6" ry="5" fill="#444"/>
+      <ellipse cx="65" cy="85" rx="6" ry="5" fill="#444"/>
+      <!-- tail curl -->
+      <path d="M75,68 Q88,55 80,40" stroke="#444" stroke-width="6" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+</div>
+
+<!-- INTRO OVERLAY -->
+<div class="overlay" id="overlay-intro">
+  <div class="panel">
+    <h1>🐱 SLOOP-SESSIE 💥</h1>
+    <h2>Help Fienoes!</h2>
+    <p>Sleep Fienoes omhoog en laat los om iemand om te gooien.<br>Hoe hoger de positie, hoe meer punten!</p>
+    <div class="target-list">
+      <div>🟦 <strong>Emma · Sam</strong> (klasgenoten) — 10 pt</div>
+      <div>🟪 <strong>Juan</strong> (pestkop) — 25 pt</div>
+      <div>🟫 <strong>Gianni</strong> (conciërge) — 40 pt</div>
+      <div>🟧 <strong>Birger · Carine</strong> (leerkrachten) — 75 pt</div>
+      <div>🟨 <strong>Veerle</strong> (surveillant) — 100 pt</div>
+      <div>🟥 <strong>LUDO</strong> (DIRECTEUR) — 250 pt 🏆 BOSS</div>
+    </div>
+    <p style="font-size:13px; color:#888;">⏱ 30 seconden · let op: hoe meer punten, hoe sneller ze lopen!</p>
+    <button class="btn-go" onclick="startGame()">START 🚀</button>
+  </div>
+</div>
+
+<!-- END OVERLAY -->
+<div class="overlay hide" id="overlay-end">
+  <div class="panel">
+    <h1>🏁 TIJD VOORBIJ! 🏁</h1>
+    <div class="final-score" id="final-score">0</div>
+    <div class="high" id="high-score">High score: 0</div>
+    <div class="fienoes-quote">
+      <strong>Fienoes:</strong> <span id="end-quote"></span>
+    </div>
+    <button class="btn-go" onclick="resetGame()">🔄 OPNIEUW</button>
+  </div>
+</div>
+
+<script>
+// ============================================
+// CONFIG
+// ============================================
+const TARGETS = [
+  { name: "Emma",     role: "klasgenoot",  pts: 10,  speed: 80,  glow: "#00AFFF", color: "#3399FF" },
+  { name: "Sam",      role: "klasgenoot",  pts: 10,  speed: 90,  glow: "#00AFFF", color: "#33AAFF" },
+  { name: "Juan",     role: "pestkop",     pts: 25,  speed: 120, glow: "#B100FF", color: "#7733CC" },
+  { name: "Gianni",   role: "conciërge",   pts: 40,  speed: 140, glow: "#FFAA66", color: "#995533" },
+  { name: "Birger",   role: "leerkracht",  pts: 75,  speed: 170, glow: "#FF8800", color: "#CC6600" },
+  { name: "Carine",   role: "leerkracht",  pts: 75,  speed: 175, glow: "#FF8800", color: "#CC6600" },
+  { name: "Veerle",   role: "surveillant", pts: 100, speed: 210, glow: "#FFDD33", color: "#CC9900" },
+  { name: "Ludo",     role: "DIRECTEUR",   pts: 250, speed: 290, glow: "#FF3366", color: "#990033" },
+];
+
+const GAME_TIME = 30;
+const STORAGE_KEY = 'fienoes_sloop_high';
+
+let score = 0;
+let timeLeft = GAME_TIME;
+let isPlaying = false;
+let targets = [];   // {el, x, y, speed, dir, data}
+let timerInterval = null;
+let spawnInterval = null;
+let animFrame = null;
+let lastTime = 0;
+let gameEl = null;
+
+// ============================================
+// SVG GENERATOR voor doelwitten
+// ============================================
+function makeTargetSVG(t) {
+  // simpele schoolfiguur — verschillend per type
+  const isLudo = t.role === "DIRECTEUR";
+  const isLeerkracht = t.role === "leerkracht";
+  const isSurveillant = t.role === "surveillant";
+  const isConcierge = t.role === "conciërge";
+  const isPestkop = t.role === "pestkop";
+
+  // hat styles
+  let hat = '';
+  if (isLudo) hat = `<rect x="32" y="14" width="36" height="6" fill="#000"/><ellipse cx="50" cy="14" rx="20" ry="3" fill="#000"/>`;
+  if (isSurveillant) hat = `<path d="M30,22 Q50,8 70,22 L66,28 L34,28 Z" fill="#003366" stroke="#001a33" stroke-width="2"/><circle cx="50" cy="20" r="4" fill="#FFDD33"/>`;
+  if (isConcierge) hat = `<path d="M35,24 Q50,16 65,24 L65,28 L35,28 Z" fill="#996633"/>`;
+  if (isPestkop) hat = `<path d="M30,28 Q50,18 70,28 L65,30 L35,30 Z" fill="#222"/><path d="M62,20 L72,18" stroke="#222" stroke-width="2"/>`;
+
+  // body color
+  const body = t.color;
+  const dark = darken(body, 0.7);
+
+  // accessory
+  let accessory = '';
+  if (isLudo) accessory = `<rect x="44" y="80" width="12" height="14" fill="#FFDD33" stroke="#000" stroke-width="1"/><text x="50" y="91" text-anchor="middle" font-size="9" fill="#000" font-weight="bold">!</text>`;
+  if (isLeerkracht) accessory = `<rect x="42" y="78" width="16" height="20" fill="#fff" stroke="#000" stroke-width="1"/><line x1="44" y1="83" x2="56" y2="83" stroke="#000"/><line x1="44" y1="87" x2="56" y2="87" stroke="#000"/><line x1="44" y1="91" x2="56" y2="91" stroke="#000"/>`;
+  if (isConcierge) accessory = `<g transform="translate(38,78)"><rect x="0" y="0" width="3" height="14" fill="#888"/><circle cx="1.5" cy="14" r="3" fill="#888"/><circle cx="6" cy="6" r="2" fill="#FFDD33"/><circle cx="-3" cy="8" r="2" fill="#999"/></g>`;
+  if (isSurveillant) accessory = `<circle cx="50" cy="86" r="4" fill="#FFDD33" stroke="#000" stroke-width="1"/>`;
+  if (isPestkop) accessory = `<text x="50" y="92" text-anchor="middle" font-size="14" fill="#FF0000">😈</text>`;
+
+  // gezicht
+  return `<svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="125" rx="25" ry="3" fill="#000" opacity="0.3"/>
+    <!-- body -->
+    <path d="M30,75 L30,115 Q30,120 35,120 L65,120 Q70,120 70,115 L70,75 Z" fill="${body}" stroke="${dark}" stroke-width="2"/>
+    <!-- arms -->
+    <ellipse cx="22" cy="85" rx="6" ry="14" fill="${body}" stroke="${dark}" stroke-width="2"/>
+    <ellipse cx="78" cy="85" rx="6" ry="14" fill="${body}" stroke="${dark}" stroke-width="2"/>
+    <!-- head -->
+    <circle cx="50" cy="50" r="22" fill="#FFDDB0" stroke="#996633" stroke-width="2"/>
+    ${hat}
+    <!-- eyes -->
+    <circle cx="42" cy="48" r="3" fill="#000"/>
+    <circle cx="58" cy="48" r="3" fill="#000"/>
+    <circle cx="43" cy="47" r="1" fill="#fff"/>
+    <circle cx="59" cy="47" r="1" fill="#fff"/>
+    <!-- mouth -->
+    ${isLudo ? '<path d="M42,60 L58,60" stroke="#000" stroke-width="2" stroke-linecap="round"/>' :
+      isPestkop ? '<path d="M42,60 Q50,55 58,60" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round"/>' :
+      '<path d="M44,60 Q50,63 56,60" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round"/>'}
+    <!-- accessory -->
+    ${accessory}
+    <!-- feet -->
+    <ellipse cx="40" cy="123" rx="8" ry="3" fill="#222"/>
+    <ellipse cx="60" cy="123" rx="8" ry="3" fill="#222"/>
+  </svg>`;
+}
+
+function darken(hex, factor) {
+  const c = hex.replace('#','');
+  const r = Math.floor(parseInt(c.substr(0,2),16) * factor);
+  const g = Math.floor(parseInt(c.substr(2,2),16) * factor);
+  const b = Math.floor(parseInt(c.substr(4,2),16) * factor);
+  return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+// ============================================
+// SPAWN
+// ============================================
+function spawnTarget() {
+  if (!isPlaying) return;
+  const data = TARGETS[Math.floor(Math.random() * TARGETS.length)];
+  const el = document.createElement('div');
+  el.className = 'target';
+  el.style.setProperty('--glow', data.glow);
+  el.innerHTML = makeTargetSVG(data) + `<div class="label" style="color:${data.glow}; border-color:${data.glow}">${data.name} (${data.role}) +${data.pts}</div>`;
+
+  const gameW = gameEl.clientWidth;
+  const gameH = gameEl.clientHeight;
+  const lanes = [
+    gameH * 0.35,
+    gameH * 0.50,
+    gameH * 0.65,
+  ];
+  const y = lanes[Math.floor(Math.random() * lanes.length)];
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  const x = dir > 0 ? -100 : gameW + 10;
+
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  if (dir < 0) el.style.transform = 'scaleX(-1)';
+  gameEl.appendChild(el);
+
+  const target = { el, x, y, speed: data.speed, dir, data };
+  targets.push(target);
+}
+
+// ============================================
+// ANIMATION LOOP
+// ============================================
+function tick(now) {
+  if (!isPlaying) return;
+  const dt = lastTime ? (now - lastTime) / 1000 : 0;
+  lastTime = now;
+  const gameW = gameEl.clientWidth;
+
+  for (let i = targets.length - 1; i >= 0; i--) {
+    const t = targets[i];
+    if (t.el.classList.contains('hit')) continue;
+    t.x += t.speed * t.dir * dt;
+    t.el.style.left = t.x + 'px';
+    if ((t.dir > 0 && t.x > gameW + 100) || (t.dir < 0 && t.x < -200)) {
+      t.el.remove();
+      targets.splice(i, 1);
+    }
+  }
+
+  animFrame = requestAnimationFrame(tick);
+}
+
+// ============================================
+// DRAG FIENOES
+// ============================================
+let isDragging = false;
+let dragStart = null;
+let fienoesEl;
+let aimLine;
+
+function getEvtPos(e) {
+  if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  return { x: e.clientX, y: e.clientY };
+}
+
+function startDrag(e) {
+  if (!isPlaying) return;
+  e.preventDefault();
+  isDragging = true;
+  fienoesEl = document.getElementById('fienoes');
+  aimLine = document.getElementById('aim-line');
+  const rect = fienoesEl.getBoundingClientRect();
+  dragStart = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+  aimLine.style.display = 'block';
+}
+
+function moveDrag(e) {
+  if (!isDragging) return;
+  e.preventDefault();
+  const p = getEvtPos(e);
+  const aimSvg = aimLine;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  aimSvg.setAttribute('width', w);
+  aimSvg.setAttribute('height', h);
+  aimSvg.style.left = '0';
+  aimSvg.style.top = '0';
+  const line = aimSvg.querySelector('line');
+  line.setAttribute('x1', dragStart.x);
+  line.setAttribute('y1', dragStart.y);
+  line.setAttribute('x2', p.x);
+  line.setAttribute('y2', p.y);
+}
+
+function endDrag(e) {
+  if (!isDragging) return;
+  isDragging = false;
+  aimLine.style.display = 'none';
+  const p = getEvtPos(e.changedTouches ? e : e);
+  let endX, endY;
+  if (e.changedTouches && e.changedTouches[0]) {
+    endX = e.changedTouches[0].clientX;
+    endY = e.changedTouches[0].clientY;
+  } else {
+    endX = e.clientX;
+    endY = e.clientY;
+  }
+
+  // bereken vlucht-punt: van fienoes naar mouse-positie, doorvliegen
+  const dx = endX - dragStart.x;
+  const dy = endY - dragStart.y;
+  if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+
+  // Fienoes vliegt naar gemikt punt
+  const flyX = endX - 50; // offset voor breedte
+  const flyY = endY - 50;
+  fienoesEl.classList.add('flying');
+  fienoesEl.style.transform = '';
+  fienoesEl.style.left = flyX + 'px';
+  fienoesEl.style.top = flyY + 'px';
+  fienoesEl.style.bottom = 'auto';
+
+  // check collision na 250ms (halverwege vlucht)
+  setTimeout(() => {
+    checkHit(endX, endY);
+  }, 250);
+
+  // terug naar start na 600ms
+  setTimeout(() => {
+    fienoesEl.classList.remove('flying');
+    fienoesEl.style.transition = 'none';
+    fienoesEl.style.left = '50%';
+    fienoesEl.style.top = 'auto';
+    fienoesEl.style.bottom = '30px';
+    fienoesEl.style.transform = 'translateX(-50%)';
+    void fienoesEl.offsetWidth;
+    fienoesEl.style.transition = '';
+  }, 700);
+}
+
+function checkHit(x, y) {
+  for (const t of targets) {
+    if (t.el.classList.contains('hit')) continue;
+    const r = t.el.getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+      hitTarget(t);
+      break;
+    }
+  }
+}
+
+function hitTarget(t) {
+  t.el.classList.add('hit');
+  score += t.data.pts;
+  document.getElementById('score').textContent = score;
+
+  // pop
+  const r = t.el.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'score-pop';
+  pop.style.color = t.data.glow;
+  pop.style.left = r.left + r.width/2 + 'px';
+  pop.style.top = r.top + 'px';
+  pop.textContent = '+' + t.data.pts;
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+
+  setTimeout(() => {
+    t.el.remove();
+    targets = targets.filter(x => x !== t);
+  }, 600);
+}
+
+document.addEventListener('mousemove', moveDrag);
+document.addEventListener('mouseup', endDrag);
+document.addEventListener('touchmove', moveDrag, { passive: false });
+document.addEventListener('touchend', endDrag);
+
+// ============================================
+// GAME FLOW
+// ============================================
+function startGame() {
+  document.getElementById('overlay-intro').classList.add('hide');
+  document.getElementById('overlay-end').classList.add('hide');
+  gameEl = document.getElementById('game');
+  score = 0;
+  timeLeft = GAME_TIME;
+  document.getElementById('score').textContent = '0';
+  document.getElementById('time').textContent = timeLeft;
+  document.getElementById('time-box').classList.remove('urgent');
+  // clear targets
+  targets.forEach(t => t.el.remove());
+  targets = [];
+  isPlaying = true;
+  lastTime = 0;
+  animFrame = requestAnimationFrame(tick);
+
+  // spawner
+  let spawnDelay = 1200;
+  spawnInterval = setInterval(() => {
+    spawnTarget();
+    // versnel
+    if (spawnDelay > 600) {
+      spawnDelay -= 30;
+      clearInterval(spawnInterval);
+      spawnInterval = setInterval(arguments.callee, spawnDelay);
+    }
+  }, spawnDelay);
+
+  // timer
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('time').textContent = timeLeft;
+    if (timeLeft <= 5) document.getElementById('time-box').classList.add('urgent');
+    if (timeLeft <= 0) endGame();
+  }, 1000);
+}
+
+function endGame() {
+  isPlaying = false;
+  clearInterval(timerInterval);
+  clearInterval(spawnInterval);
+  cancelAnimationFrame(animFrame);
+  targets.forEach(t => t.el.remove());
+  targets = [];
+
+  // high score
+  let high = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
+  let isNewHigh = false;
+  if (score > high) {
+    high = score;
+    localStorage.setItem(STORAGE_KEY, String(high));
+    isNewHigh = true;
+  }
+
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('high-score').textContent =
+    (isNewHigh ? '🌟 NIEUWE HIGH SCORE! ' : 'High score: ') + high;
+
+  // Fienoes quote
+  let quote = '';
+  if (score === 0) quote = "Pff. Niemand omver. Probeer toch eens te mikken.";
+  else if (score < 100) quote = "Klein begin. Volgende keer beter, hé.";
+  else if (score < 300) quote = "Niet slecht. De pestkop verdiende dat.";
+  else if (score < 600) quote = "Yes! Echte sloop-sessie. Lekker bezig.";
+  else if (score < 1000) quote = "Whoa. Iemand had vandaag wat in te halen.";
+  else quote = "LEGENDE. Zelfs Ludo ligt op de grond. 🏆";
+  if (isNewHigh) quote += " (En nog een record ook!)";
+  document.getElementById('end-quote').textContent = quote;
+
+  document.getElementById('overlay-end').classList.remove('hide');
+}
+
+function resetGame() {
+  startGame();
+}
+</script>
+</body>
+</html>

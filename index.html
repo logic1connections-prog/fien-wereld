@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fien's Wereld 🌈</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; }
+  body {
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background: radial-gradient(ellipse at center, #1a0833 0%, #050010 100%);
+    color:#fff; min-height:100vh; overflow-x:hidden;
+  }
+  .bg-stars {
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(2px 2px at 20% 30%, #B100FF, transparent),
+      radial-gradient(2px 2px at 60% 70%, #FF2EB3, transparent),
+      radial-gradient(1px 1px at 50% 50%, #00AFFF, transparent),
+      radial-gradient(2px 2px at 80% 10%, #B100FF, transparent),
+      radial-gradient(1px 1px at 10% 90%, #FF2EB3, transparent);
+    z-index:0; opacity:0.6; pointer-events:none;
+  }
+  #hub { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:24px 18px; min-height:100vh; }
+
+  /* HERO */
+  .hero {
+    display:flex; align-items:center; gap:20px;
+    background:linear-gradient(135deg,rgba(177,0,255,0.15),rgba(255,46,179,0.1));
+    border:2px solid #B100FF; border-radius:22px; padding:20px 24px;
+    margin-bottom:16px; box-shadow:0 0 30px rgba(177,0,255,0.3); overflow:hidden;
+  }
+  .hero-img {
+    width:120px; height:120px; object-fit:cover; object-position:top;
+    border-radius:50%; border:3px solid #FF2EB3;
+    box-shadow:0 0 20px rgba(255,46,179,0.6); flex-shrink:0;
+  }
+  .hero-text h1 { font-size:32px; color:#B100FF; text-shadow:0 0 22px #B100FF; letter-spacing:3px; margin-bottom:4px; }
+  .hero-text .sub { color:#00AFFF; text-shadow:0 0 10px #00AFFF; font-size:14px; }
+  .hero-text .fienoes { margin-top:8px; font-style:italic; color:#FF2EB3; text-shadow:0 0 8px #FF2EB3; font-size:13px; }
+  @media(max-width:500px) {
+    .hero { flex-direction:column; text-align:center; }
+    .hero-img { width:90px; height:90px; }
+    .hero-text h1 { font-size:24px; }
+  }
+
+  /* XP PROGRESS BAR */
+  .xp-bar-wrap {
+    background:rgba(0,0,0,0.5); border:2px solid #B100FF;
+    border-radius:50px; padding:6px 16px;
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:20px; box-shadow:0 0 15px rgba(177,0,255,0.3);
+  }
+  .xp-label { font-size:12px; color:#B100FF; font-weight:bold; white-space:nowrap; min-width:80px; }
+  .xp-track { flex:1; height:14px; background:rgba(255,255,255,0.1); border-radius:50px; overflow:hidden; }
+  .xp-fill {
+    height:100%; width:0%; border-radius:50px;
+    background:linear-gradient(90deg,#B100FF,#FF2EB3,#FFD700);
+    transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow:0 0 10px rgba(255,46,179,0.6);
+  }
+  .xp-count { font-size:12px; color:#FFD700; font-weight:bold; white-space:nowrap; }
+
+  /* SECTION LABELS */
+  .section-label {
+    font-size:11px; font-weight:bold; letter-spacing:2px;
+    color:#888; text-transform:uppercase; margin:20px 0 10px;
+    border-left:3px solid #B100FF; padding-left:10px;
+  }
+
+  /* TILES */
+  .tile-grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+  .tile {
+    background:linear-gradient(135deg,rgba(177,0,255,0.2),rgba(255,46,179,0.2));
+    border:2px solid #B100FF; border-radius:22px; padding:22px 18px;
+    cursor:pointer; transition:all 0.25s; box-shadow:0 0 20px rgba(177,0,255,0.3);
+    min-height:180px; display:flex; flex-direction:column; text-align:center;
+    position:relative;
+  }
+  .tile:hover { transform:translateY(-6px) scale(1.02); box-shadow:0 0 35px rgba(255,46,179,0.7); border-color:#FF2EB3; }
+  .tile:active { transform:scale(0.98); }
+  .tile-emoji { font-size:50px; margin-bottom:8px; filter:drop-shadow(0 0 14px var(--glow,#FF2EB3)); }
+  .tile h2 { font-size:18px; color:var(--glow,#FF2EB3); text-shadow:0 0 12px var(--glow,#FF2EB3); margin-bottom:5px; letter-spacing:1px; }
+  .tile p { font-size:12px; color:#ccc; line-height:1.4; flex:1; }
+  .tile .tag {
+    display:inline-block; background:rgba(0,0,0,0.4);
+    color:var(--glow,#FFD700); border:1px solid currentColor;
+    padding:3px 10px; border-radius:10px; font-size:11px;
+    font-weight:bold; margin-top:10px; align-self:center;
+  }
+  .tile.new-tile { border-color:#00FFCC; }
+  .tile.new-tile:hover { box-shadow:0 0 35px rgba(0,255,204,0.7); border-color:#00FFCC; }
+  .tile.done { border-color:#00FF88 !important; box-shadow:0 0 20px rgba(0,255,136,0.4) !important; }
+  .tile.done::after {
+    content:'✅'; position:absolute; top:10px; right:12px;
+    font-size:20px; filter:drop-shadow(0 0 6px #00FF88);
+  }
+
+  /* APP VIEW */
+  #app-view { position:fixed; inset:0; background:#050010; z-index:100; display:none; flex-direction:column; }
+  #app-view.show { display:flex; }
+  .app-topbar {
+    background:rgba(0,0,0,0.8); border-bottom:2px solid #B100FF;
+    padding:10px 16px; display:flex; align-items:center; gap:12px;
+    box-shadow:0 0 15px rgba(177,0,255,0.3); backdrop-filter:blur(8px); z-index:10;
+  }
+  .back-btn {
+    background:linear-gradient(135deg,#B100FF,#FF2EB3); color:#fff;
+    border:none; padding:8px 16px; border-radius:50px;
+    font-family:inherit; font-weight:bold; cursor:pointer;
+    box-shadow:0 0 12px rgba(255,46,179,0.5); font-size:14px;
+  }
+  .back-btn:hover { transform:scale(1.05); }
+  .app-title { color:#FF2EB3; text-shadow:0 0 10px #FF2EB3; font-weight:bold; font-size:16px; flex:1; text-align:center; }
+  #app-frame { flex:1; border:none; width:100%; background:#050010; }
+
+  /* HERO UNLOCK OVERLAY */
+  #hero-unlock {
+    display:none; position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,10,0.92);
+    flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:20px;
+  }
+  #hero-unlock.show { display:flex; animation:heroFadeIn 0.8s ease; }
+  @keyframes heroFadeIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+  .hero-unlock-img {
+    max-width:min(420px,90vw); border-radius:20px;
+    border:3px solid #FF2EB3; box-shadow:0 0 60px rgba(255,46,179,0.8);
+    margin-bottom:24px; animation:heroPulse 2s ease-in-out infinite;
+  }
+  @keyframes heroPulse {
+    0%,100% { box-shadow:0 0 40px rgba(255,46,179,0.6); }
+    50% { box-shadow:0 0 80px rgba(177,0,255,0.9), 0 0 120px rgba(255,46,179,0.5); }
+  }
+  .hero-unlock-title {
+    font-size:36px; font-weight:900; letter-spacing:4px;
+    background:linear-gradient(135deg,#B100FF,#FF2EB3,#FFD700);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text; margin-bottom:10px;
+  }
+  .hero-unlock-sub { font-size:16px; color:#00AFFF; text-shadow:0 0 10px #00AFFF; margin-bottom:8px; }
+  .hero-unlock-quote {
+    font-size:14px; color:#FFD700; font-style:italic;
+    border:1px solid #FFD700; border-radius:12px; padding:10px 20px;
+    margin:16px 0; max-width:400px;
+  }
+  .hero-close-btn {
+    background:linear-gradient(135deg,#B100FF,#FF2EB3); color:#fff;
+    border:none; padding:12px 32px; border-radius:50px;
+    font-size:16px; font-weight:bold; cursor:pointer; margin-top:16px;
+    box-shadow:0 0 20px rgba(255,46,179,0.5); transition:all 0.2s;
+  }
+  .hero-close-btn:hover { transform:scale(1.05); }
+
+  /* CONFETTI */
+  .confetti-piece {
+    position:fixed; width:10px; height:10px; border-radius:2px;
+    animation:confettiFall linear forwards; z-index:201; pointer-events:none;
+  }
+  @keyframes confettiFall {
+    0% { transform:translateY(-20px) rotate(0deg); opacity:1; }
+    100% { transform:translateY(110vh) rotate(720deg); opacity:0; }
+  }
+
+  .hub-footer { text-align:center; margin-top:32px; color:#555; font-size:12px; padding-bottom:20px; }
+  @media(max-width:500px) {
+    .tile-grid { grid-template-columns:1fr; gap:12px; }
+    .tile-emoji { font-size:40px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-stars"></div>
+
+<div id="hub">
+
+  <!-- HERO -->
+  <div class="hero">
+    <img class="hero-img" src="assets/fien-portret.png" alt="Fien">
+    <div class="hero-text">
+      <h1>🌈 FIEN'S WERELD 🌈</h1>
+      <div class="sub">kies wat je vandaag wil doen</div>
+      <div class="fienoes">— Fienoes wacht op je 🐱</div>
+    </div>
+  </div>
+
+  <!-- XP VOORTGANGSBALK -->
+  <div class="xp-bar-wrap">
+    <div class="xp-label">⭐ VOORTGANG</div>
+    <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+    <div class="xp-count" id="xp-count">0 / 14</div>
+  </div>
+
+  <!-- GAMES & VERHALEN -->
+  <div class="section-label">🎮 Games &amp; Verhalen</div>
+  <div class="tile-grid">
+    <div class="tile" style="--glow:#B100FF;" data-app="quest" data-title="🎮 FIEN'S DAG">
+      <div class="tile-emoji">🎮</div>
+      <h2>FIEN'S DAG</h2>
+      <p>De grote queeste van Fien en Fienoes. 21 keuzes, XP verzamelen.</p>
+      <span class="tag">VERHAAL</span>
+    </div>
+    <div class="tile" style="--glow:#FFD700;" data-app="figuur" data-title="🐺 WELK FIGUUR BEN JIJ?">
+      <div class="tile-emoji">🐺</div>
+      <h2>WELK FIGUUR BEN JIJ?</h2>
+      <p>3 vragen → ontdek of je vandaag een Wolf, Plofkip, Vos of iets anders bent.</p>
+      <span class="tag">SPELLETJE</span>
+    </div>
+    <div class="tile" style="--glow:#FF3366;" data-app="sloop" data-title="💥 SLOOP-SESSIE">
+      <div class="tile-emoji">💥</div>
+      <h2>SLOOP-SESSIE</h2>
+      <p>Fienoes vs de school. Gooi iedereen omver. Ludo = boss.</p>
+      <span class="tag">MINI-GAME</span>
+    </div>
+    <div class="tile" style="--glow:#FFAA00;" data-app="emotie" data-title="😊 WAT VOELT DEZE SMILEY?">
+      <div class="tile-emoji">😊</div>
+      <h2>WAT VOELT DEZE SMILEY?</h2>
+      <p>Benoem de emotie. Zo ver mogelijk komen. 1× fout = opnieuw.</p>
+      <span class="tag">EMOTIES</span>
+    </div>
+  </div>
+
+  <!-- LESSEN -->
+  <div class="section-label">📚 Lessen &amp; Leren</div>
+  <div class="tile-grid">
+    <div class="tile" style="--glow:#00FFCC;" data-app="carre" data-title="🎩 MONSIEUR CARRÉ">
+      <div class="tile-emoji">🎩</div>
+      <h2>MONSIEUR CARRÉ</h2>
+      <p>Frans + vormen samen. 11 slides, badges, Zot-Meter.</p>
+      <span class="tag">LES</span>
+    </div>
+    <div class="tile new-tile" style="--glow:#00FFCC;" data-app="empathy" data-title="🎯 EMPATHY RADAR QUEST">
+      <div class="tile-emoji">🎯</div>
+      <h2>EMPATHY RADAR QUEST</h2>
+      <p>Ontdek empathie stap voor stap. Interactief werkboek als PDF.</p>
+      <span class="tag">NIEUW</span>
+    </div>
+  </div>
+
+  <!-- UITLEGGERS -->
+  <div class="section-label">👩‍🏫 Uitleggers</div>
+  <div class="tile-grid">
+    <div class="tile new-tile" style="--glow:#FF9500;" data-app="uitleggers" data-title="👩‍🏫 JUF EMMA, VEERLE &amp; BENEDICT">
+      <div class="tile-emoji">👩‍🏫</div>
+      <h2>JUF EMMA, VEERLE &amp; BENEDICT</h2>
+      <p>Klik op een persoon — zij leggen het uit! Tips, uitleg en aanmoediging.</p>
+      <span class="tag">UITLEG</span>
+    </div>
+    <div class="tile" style="--glow:#00AFFF;" data-app="sterrenhemel" data-title="✨ STERRENHEMEL">
+      <div class="tile-emoji">✨</div>
+      <h2>STERRENHEMEL</h2>
+      <p>Je foto's als sterren. Hoe vaker je ze opent, hoe feller ze gloeien.</p>
+      <span class="tag">FOTO'S</span>
+    </div>
+  </div>
+
+  <!-- FIENOES HOEK -->
+  <div class="section-label">🐱 Fienoes' Hoek</div>
+  <div class="tile-grid">
+    <div class="tile new-tile" style="--glow:#FF2EB3;" data-app="filmpjes" data-title="🎬 FIENOES' FILMPJES">
+      <div class="tile-emoji">🎬</div>
+      <h2>FIENOES' FILMPJES</h2>
+      <p>Twee korte films met Fienoes. Kijk, lach en leer!</p>
+      <span class="tag">VIDEO</span>
+    </div>
+    <div class="tile new-tile" style="--glow:#B100FF;" data-app="portret" data-title="🌟 FIEN'S PORTRET">
+      <div class="tile-emoji">🌟</div>
+      <h2>FIEN'S PORTRET</h2>
+      <p>Wie is Fien? Haar badges, haar kracht, haar verhaal.</p>
+      <span class="tag">PROFIEL</span>
+    </div>
+    <div class="tile new-tile" style="--glow:#FF6B6B;" data-app="oeps" data-title="💦 FIENOES PLONST!">
+      <div class="tile-emoji">💦</div>
+      <h2>FIENOES PLONST!</h2>
+      <p>Oeps! Fienoes in de kattenbak. De klassieke fail-pagina.</p>
+      <span class="tag">EASTER EGG</span>
+    </div>
+  </div>
+
+  <!-- NIEUWE QUESTS -->
+  <div class="section-label">🆕 Nieuwe Quests</div>
+  <div class="tile-grid">
+    <div class="tile new-tile" style="--glow:#FFD700;" data-app="plopsa" data-title="🎡 DE GROTE PLOPSA QUEST">
+      <div class="tile-emoji">🎡</div>
+      <h2>DE GROTE PLOPSA QUEST</h2>
+      <p>Avontuur in Plopsaland! Keuzes maken, XP verdienen, missies voltooien.</p>
+      <span class="tag">QUEST</span>
+    </div>
+    <div class="tile new-tile" style="--glow:#FF6B9D;" data-app="empathie" data-title="❤️ FIEN'S EMPATHIE QUEST">
+      <div class="tile-emoji">❤️</div>
+      <h2>FIEN'S EMPATHIE QUEST</h2>
+      <p>De Emotie-Radar. Leer empathie stap voor stap via verhalen en keuzes.</p>
+      <span class="tag">QUEST</span>
+    </div>
+    <div class="tile new-tile" style="--glow:#00FFCC;" data-app="huiswerk" data-title="📚 HUISWERK QUEST">
+      <div class="tile-emoji">📚</div>
+      <h2>HUISWERK QUEST</h2>
+      <p>Fien's Planner Avontuur. Organiseer je dag en versla de uitstelsteen!</p>
+      <span class="tag">QUEST</span>
+    </div>
+  </div>
+
+  <div class="hub-footer">
+    Logic Connections · Fien's Wereld · v2.0 · Alle rechten bij Birger Joos
+  </div>
+</div>
+
+<!-- HERO UNLOCK OVERLAY -->
+<div id="hero-unlock">
+  <img class="hero-unlock-img" src="assets/fien-hero.png" alt="Fien Hero">
+  <div class="hero-unlock-title">🏆 FIEN IS EEN HERO! 🏆</div>
+  <div class="hero-unlock-sub">Je hebt alle 14 oefeningen voltooid!</div>
+  <div class="hero-unlock-quote">"I may be small, but I can make a BIG difference!"</div>
+  <div style="font-size:13px; color:#ccc; max-width:380px; margin-bottom:8px;">
+    KIND · BRAVE · CLEVER · TEAM PLAYER
+  </div>
+  <button class="hero-close-btn" onclick="closeHero()">Doorgaan →</button>
+</div>
+
+<!-- APP VIEW -->
+<div id="app-view">
+  <div class="app-topbar">
+    <button class="back-btn" onclick="closeApp()">← Terug</button>
+    <div class="app-title" id="app-title"></div>
+    <div style="width:80px;"></div>
+  </div>
+  <iframe id="app-frame" allow="microphone; camera" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"></iframe>
+</div>
+
+<script>
+// ── Inline apps (built dynamically) ────────────────────────────────────────
+// These apps are loaded from separate HTML files via iframe src
+const APP_URLS = {
+  quest:        'assets/quest.html',
+  figuur:       'assets/figuur.html',
+  sloop:        'assets/sloop.html',
+  emotie:       'assets/emotie.html',
+  carre:        'assets/carre.html',
+  sterrenhemel: 'assets/sterrenhemel.html',
+  plopsa:       'assets/plopsa.html',
+  empathie:     'assets/empathie.html',
+  huiswerk:     'assets/huiswerk.html',
+};
+
+// ── XP System ───────────────────────────────────────────────────────────────
+const TOTAL = 14;
+const STORAGE_KEY = 'fien_hub_done';
+let done = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+let heroShown = false;
+
+function initXP() {
+  done.forEach(name => markTileDone(name, false));
+  updateXPBar();
+}
+
+function markTileDone(name, animate) {
+  const tile = document.querySelector(`.tile[data-app="${name}"]`);
+  if (tile && !tile.classList.contains('done')) {
+    tile.classList.add('done');
+    if (animate) {
+      tile.style.transform = 'scale(1.08)';
+      setTimeout(() => { tile.style.transform = ''; }, 400);
+    }
+  }
+}
+
+function updateXPBar() {
+  const count = done.size;
+  const pct = Math.round((count / TOTAL) * 100);
+  document.getElementById('xp-fill').style.width = pct + '%';
+  document.getElementById('xp-count').textContent = count + ' / ' + TOTAL;
+  if (count >= TOTAL && !heroShown) {
+    heroShown = true;
+    setTimeout(showHeroUnlock, 600);
+  }
+}
+
+function showHeroUnlock() {
+  launchConfetti();
+  document.getElementById('hero-unlock').classList.add('show');
+}
+
+function closeHero() {
+  document.getElementById('hero-unlock').classList.remove('show');
+}
+
+function launchConfetti() {
+  const colors = ['#B100FF','#FF2EB3','#FFD700','#00AFFF','#00FF88','#FF6B6B'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (8 + Math.random() * 8) + 'px';
+    el.style.height = (8 + Math.random() * 8) + 'px';
+    el.style.animationDuration = (2 + Math.random() * 3) + 's';
+    el.style.animationDelay = Math.random() * 1.5 + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 6000);
+  }
+}
+
+// ── Inline apps (not separate files) ────────────────────────────────────────
+function buildFilmpjesHTML() {
+  return `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Fienoes' Filmpjes</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:radial-gradient(ellipse at center,#1a0833,#050010);color:#fff;min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:20px}
+h1{text-align:center;font-size:28px;color:#FF2EB3;text-shadow:0 0 20px #FF2EB3;margin-bottom:6px}
+.sub{text-align:center;color:#00AFFF;font-size:14px;margin-bottom:28px}
+.video-section{margin-bottom:36px}
+.video-title{font-size:18px;font-weight:bold;color:#B100FF;text-shadow:0 0 10px #B100FF;margin-bottom:10px}
+.video-desc{font-size:13px;color:#aaa;margin-bottom:12px;line-height:1.5}
+video{width:100%;border-radius:16px;border:2px solid #B100FF;box-shadow:0 0 25px rgba(177,0,255,0.4);background:#000;display:block}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(177,0,255,0.2);border:1px solid #B100FF;border-radius:20px;padding:4px 12px;font-size:11px;color:#B100FF;margin-bottom:10px}
+</style></head><body>
+<div class="container">
+<h1>🎬 FIENOES' FILMPJES</h1>
+<div class="sub">Kijk, lach en leer met Fienoes!</div>
+<div class="video-section">
+<div class="badge">🐱 Fienoes Speciaal</div>
+<div class="video-title">💥 Madness Juice — Workshop Accident</div>
+<div class="video-desc">Fienoes in de werkplaats... wat kan er fout gaan? Alles. Maar op de coolste manier.</div>
+<video controls preload="metadata"><source src="../assets/madness-juice.mp4" type="video/mp4">Je browser ondersteunt geen video.</video>
+</div>
+<div class="video-section">
+<div class="badge">🚽 Fienoes Plonst</div>
+<div class="video-title">🚿 Fienoes in de WC!</div>
+<div class="video-desc">Oeps! Fienoes plonst weer. Kijk maar... hij kan er niets aan doen. 😂</div>
+<video controls preload="metadata"><source src="../assets/fienoes-wc.mp4" type="video/mp4">Je browser ondersteunt geen video.</video>
+</div>
+</div></body></html>`;
+}
+
+function buildPortretHTML() {
+  return `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Fien's Portret</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:radial-gradient(ellipse at center,#1a0833,#050010);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:500px;width:100%;text-align:center}
+.portrait{width:220px;height:220px;object-fit:cover;object-position:top;border-radius:50%;border:4px solid #FF2EB3;box-shadow:0 0 40px rgba(255,46,179,0.7);margin:0 auto 20px;display:block}
+h1{font-size:40px;color:#B100FF;text-shadow:0 0 25px #B100FF;letter-spacing:4px;margin-bottom:6px}
+.tagline{color:#00AFFF;font-size:14px;margin-bottom:24px}
+.badges{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:24px}
+.badge{background:rgba(0,0,0,0.5);border-radius:14px;padding:10px 16px;font-size:13px;font-weight:bold;border:2px solid}
+.badge.lief{border-color:#FF2EB3;color:#FF2EB3}
+.badge.slim{border-color:#00AFFF;color:#00AFFF}
+.badge.door{border-color:#FFD700;color:#FFD700}
+.badge.fan{border-color:#B100FF;color:#B100FF}
+.quote{font-style:italic;color:#FFD700;border:1px solid #FFD700;border-radius:12px;padding:12px 20px;font-size:14px}
+</style></head><body>
+<div class="card">
+<img class="portrait" src="../assets/fien-portret.png" alt="Fien">
+<h1>FIEN</h1>
+<div class="tagline">Kind heart. Brave spirit. Stronger together.</div>
+<div class="badges">
+<div class="badge lief">❤️ LIEF</div>
+<div class="badge slim">💡 SLIM</div>
+<div class="badge door">⭐ DOORZETTER</div>
+<div class="badge fan">🐾 FIENOES FAN</div>
+</div>
+<div class="quote">"Hoi! Ik ben Fien." 🐱</div>
+</div></body></html>`;
+}
+
+function buildOepsHTML() {
+  return `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Fienoes Plonst!</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:700px;width:100%;text-align:center}
+img{width:100%;border-radius:16px;margin-bottom:20px}
+h1{font-size:32px;color:#333;margin-bottom:8px}
+p{color:#666;font-size:16px}
+</style></head><body>
+<div class="card">
+<img src="../assets/fienoes-plonst.png" alt="Fienoes Plonst!">
+<h1>💦 Oeps! Fienoes plonst!</h1>
+<p>Gemist: 2X — maar Fienoes geeft nooit op! 😎</p>
+</div></body></html>`;
+}
+
+function buildUitleggersHTML() {
+  return `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Uitleggers</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:radial-gradient(ellipse at center,#1a0833,#050010);color:#fff;min-height:100vh;padding:20px}
+.container{max-width:900px;margin:0 auto}
+h1{text-align:center;font-size:28px;color:#FF9500;text-shadow:0 0 20px #FF9500;margin-bottom:6px;letter-spacing:2px}
+.sub{text-align:center;color:#00AFFF;font-size:14px;margin-bottom:24px}
+.team-img{width:100%;max-width:500px;border-radius:20px;border:3px solid #FF9500;box-shadow:0 0 30px rgba(255,149,0,0.5);display:block;margin:0 auto 28px}
+.persons{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.person{background:rgba(255,149,0,0.1);border:2px solid #FF9500;border-radius:18px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s}
+.person:hover{transform:translateY(-4px);box-shadow:0 0 25px rgba(255,149,0,0.5)}
+.person-emoji{font-size:48px;margin-bottom:8px}
+.person-name{font-size:18px;font-weight:bold;color:#FF9500;margin-bottom:4px}
+.person-role{font-size:12px;color:#aaa;margin-bottom:12px}
+.speech{display:none;background:rgba(0,0,0,0.6);border:1px solid #FF9500;border-radius:12px;padding:12px;font-size:13px;color:#fff;line-height:1.5;margin-top:8px;text-align:left}
+.person.active .speech{display:block}
+.person.active{border-color:#FFD700;box-shadow:0 0 30px rgba(255,215,0,0.4)}
+</style></head><body>
+<div class="container">
+<h1>👩‍🏫 DE UITLEGGERS</h1>
+<div class="sub">Klik op een persoon om hun tip te zien!</div>
+<img class="team-img" src="../assets/team.png" alt="Juf Emma, Veerle en Benedict">
+<div class="persons">
+<div class="person" onclick="this.classList.toggle('active')">
+<div class="person-emoji">👩‍🏫</div>
+<div class="person-name">Juf Emma</div>
+<div class="person-role">Leerkracht &amp; Gids</div>
+<div class="speech">💬 "Neem de tijd om te lezen. Elke stap telt — ook de kleine. Je bent verder dan je denkt!"</div>
+</div>
+<div class="person" onclick="this.classList.toggle('active')">
+<div class="person-emoji">👩‍🦱</div>
+<div class="person-name">Veerle</div>
+<div class="person-role">Klasgenoot &amp; Vriendin</div>
+<div class="speech">💬 "Ik doe het ook stap voor stap. Als ik vastzit, vraag ik gewoon hulp. Dat is slim, niet zwak!"</div>
+</div>
+<div class="person" onclick="this.classList.toggle('active')">
+<div class="person-emoji">👨‍🦱</div>
+<div class="person-name">Benedict</div>
+<div class="person-role">Klasgenoot &amp; Motivator</div>
+<div class="speech">💬 "Fouten maken is oefenen. Ik heb dit ook moeten leren. Jij kan het ook — echt!"</div>
+</div>
+</div>
+</div></body></html>`;
+}
+
+function buildEmpathyHTML() {
+  return `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Empathy Radar Quest</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:radial-gradient(ellipse at center,#1a0833,#050010);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center}
+h1{font-size:28px;color:#00AFFF;text-shadow:0 0 15px #00AFFF;margin-bottom:12px}
+p{color:#ccc;font-size:15px;max-width:500px;line-height:1.6;margin-bottom:24px}
+.btn{background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:14px 32px;border-radius:50px;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 0 20px rgba(255,46,179,0.5);text-decoration:none;display:inline-block}
+.btn:hover{transform:scale(1.05)}
+.note{font-size:12px;color:#666;margin-top:16px}
+</style></head><body>
+<h1>🎯 Empathy Radar Quest</h1>
+<p>De Empathy Radar Quest PDF bevat het volledige interactieve werkboek. Klik hieronder om het te openen in een nieuw tabblad.</p>
+<a class="btn" href="https://drive.google.com/file/d/1_empathy_radar_quest/view" target="_blank" onclick="this.textContent='Bezig met laden...'">📄 Open Empathy Radar Quest PDF</a>
+<div class="note">Het PDF-bestand opent in een nieuw tabblad.</div>
+</body></html>`;
+}
+
+// ── App loading ──────────────────────────────────────────────────────────────
+const INLINE_BUILDERS = {
+  filmpjes:   buildFilmpjesHTML,
+  portret:    buildPortretHTML,
+  oeps:       buildOepsHTML,
+  uitleggers: buildUitleggersHTML,
+  empathy:    buildEmpathyHTML,
+};
+
+let currentBlobUrl = null;
+
+document.querySelectorAll('.tile[data-app]').forEach(tile => {
+  tile.addEventListener('click', () => openApp(tile.dataset.app, tile.dataset.title));
+});
+
+function openApp(name, title) {
+  document.getElementById('app-title').textContent = title || name;
+  document.getElementById('app-view').classList.add('show');
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+
+  const frame = document.getElementById('app-frame');
+
+  if (APP_URLS[name]) {
+    // Load from separate file
+    frame.src = APP_URLS[name];
+  } else if (INLINE_BUILDERS[name]) {
+    // Build inline HTML and load as blob
+    const html = INLINE_BUILDERS[name]();
+    const blob = new Blob([html], {type: 'text/html; charset=utf-8'});
+    currentBlobUrl = URL.createObjectURL(blob);
+    frame.src = currentBlobUrl;
+  } else {
+    frame.src = 'about:blank';
+    alert('App niet gevonden: ' + name);
+    return;
+  }
+
+  // Mark as done after 3 seconds
+  if (!done.has(name)) {
+    setTimeout(() => {
+      done.add(name);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...done]));
+      markTileDone(name, true);
+      updateXPBar();
+    }, 3000);
+  }
+}
+
+function closeApp() {
+  document.getElementById('app-view').classList.remove('show');
+  const frame = document.getElementById('app-frame');
+  frame.src = 'about:blank';
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('hero-unlock').classList.contains('show')) closeHero();
+    else if (document.getElementById('app-view').classList.contains('show')) closeApp();
+  }
+});
+
+initXP();
+</script>
+</body>
+</html>
