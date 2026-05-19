@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empathy Radar Quest</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(ellipse at center, #1a0833, #050010);
+  color: #fff; min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+.header {
+  background: rgba(0,0,0,0.6);
+  border-bottom: 2px solid #00AFFF;
+  padding: 16px 20px;
+  text-align: center;
+}
+.header h1 {
+  font-size: 22px; color: #00AFFF;
+  text-shadow: 0 0 15px #00AFFF; margin-bottom: 4px;
+}
+.header p { font-size: 13px; color: #aaa; }
+.pdf-container {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 16px; gap: 12px;
+}
+.btn-row {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+}
+.btn {
+  background: linear-gradient(135deg, #B100FF, #FF2EB3);
+  color: #fff; border: none; padding: 10px 24px;
+  border-radius: 50px; font-size: 14px; font-weight: bold;
+  cursor: pointer; text-decoration: none; display: inline-block;
+  box-shadow: 0 0 15px rgba(255,46,179,0.5); transition: all 0.2s;
+}
+.btn:hover { transform: scale(1.05); }
+.btn.secondary {
+  background: linear-gradient(135deg, #00AFFF, #0066CC);
+  box-shadow: 0 0 15px rgba(0,175,255,0.5);
+}
+iframe {
+  flex: 1; border: 2px solid #00AFFF;
+  border-radius: 12px; background: #fff;
+  min-height: 70vh;
+  box-shadow: 0 0 20px rgba(0,175,255,0.3);
+}
+.note {
+  text-align: center; font-size: 12px; color: #666;
+  padding: 8px;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🎯 Empathy Radar Quest</h1>
+  <p>Het interactieve werkboek van Fien</p>
+</div>
+<div class="pdf-container">
+  <div class="btn-row">
+    <a class="btn" href="https://files.manuscdn.com/user_upload_by_module/session_file/310519663102570226/MhqYMpNXsiwzehOf.pdf" target="_blank">📄 Open in nieuw tabblad</a>
+    <a class="btn secondary" href="https://files.manuscdn.com/user_upload_by_module/session_file/310519663102570226/MhqYMpNXsiwzehOf.pdf" download="Empathy_Radar_Quest.pdf">⬇️ Download PDF</a>
+  </div>
+  <iframe
+    src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663102570226/MhqYMpNXsiwzehOf.pdf"
+    title="Empathy Radar Quest PDF">
+  </iframe>
+  <div class="note">Als de PDF niet laadt, gebruik dan de knop "Open in nieuw tabblad" hierboven.</div>
+</div>
+</body>
+</html>
