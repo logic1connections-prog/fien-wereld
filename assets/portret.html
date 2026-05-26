@@ -54,5 +54,33 @@ h1 {
   <span class="badge pink">🐾 Fienoes Fan</span>
 </div>
 <div class="quote">"Ik ben Fien. Ik ben lief, slim en ik geef nooit op — ook al plonst Fienoes soms in de wc."</div>
+
+<!-- VOICE BUTTON -->
+<div id="voice-bar" style="position:fixed;bottom:16px;right:16px;z-index:999;display:flex;gap:8px;align-items:center;">
+  <button id="voice-btn" onclick="toggleVoice()" style="background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px rgba(177,0,255,0.5);">🔊 Lees voor</button>
+  <button id="voice-stop" onclick="stopVoice()" style="display:none;background:rgba(0,0,0,0.6);color:#fff;border:2px solid #FF2EB3;padding:8px 14px;border-radius:50px;font-size:13px;cursor:pointer;">⏹ Stop</button>
+</div>
+<script>
+const VOICE_TEXT = `Dit is Fien! Fien is lief, slim en een echte doorzetter. Ze geeft nooit op, ook als het moeilijk is. En ze is de grootste fan van Fienoes, haar trouwe kat. Wat is jouw superkracht?`;
+let synth = window.speechSynthesis;
+let speaking = false;
+function getVoice() {
+  const v = synth.getVoices();
+  return v.find(x => x.lang==='nl-NL'||x.lang==='nl-BE'||x.lang.startsWith('nl')) || v[0];
+}
+function toggleVoice() { if(speaking){stopVoice();return;} startVoice(); }
+function startVoice() {
+  if(synth.speaking) synth.cancel();
+  const u = new SpeechSynthesisUtterance(VOICE_TEXT);
+  u.lang='nl-NL'; u.rate=0.95; u.pitch=1.05;
+  const voice=getVoice(); if(voice) u.voice=voice;
+  u.onstart=()=>{ speaking=true; document.getElementById('voice-btn').textContent='⏸ Pauze'; document.getElementById('voice-stop').style.display='inline-block'; };
+  u.onend=u.onerror=()=>{ speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; };
+  synth.speak(u);
+}
+function stopVoice() { synth.cancel(); speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{};
+<\/script>
+
 </body>
 </html>

@@ -438,7 +438,35 @@ video{width:100%;border-radius:16px;border:2px solid #B100FF;box-shadow:0 0 25px
 <div class="video-desc">Oeps! Fienoes plonst weer. Kijk maar... hij kan er niets aan doen. 😂</div>
 <video controls preload="metadata"><source src="../assets/fienoes-wc.mp4" type="video/mp4">Je browser ondersteunt geen video.</video>
 </div>
-</div></body></html>`;
+</div>
+<!-- VOICE BUTTON -->
+<div id="voice-bar" style="position:fixed;bottom:16px;right:16px;z-index:999;display:flex;gap:8px;align-items:center;">
+  <button id="voice-btn" onclick="toggleVoice()" style="background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px rgba(177,0,255,0.5);">🔊 Lees voor</button>
+  <button id="voice-stop" onclick="stopVoice()" style="display:none;background:rgba(0,0,0,0.6);color:#fff;border:2px solid #FF2EB3;padding:8px 14px;border-radius:50px;font-size:13px;cursor:pointer;">⏹ Stop</button>
+</div>
+<script>
+const VOICE_TEXT = `Hoi! Welkom in Fien's Wereld! Ik ben Fienoes, de kat van Fien. Kies een tegel en begin je avontuur. Hoe meer je doet, hoe meer XP je verdient. En als je alles gedaan hebt... wacht er een verrassing op je!`;
+let synth = window.speechSynthesis;
+let speaking = false;
+function getVoice() {
+  const v = synth.getVoices();
+  return v.find(x => x.lang==='nl-NL'||x.lang==='nl-BE'||x.lang.startsWith('nl')) || v[0];
+}
+function toggleVoice() { if(speaking){stopVoice();return;} startVoice(); }
+function startVoice() {
+  if(synth.speaking) synth.cancel();
+  const u = new SpeechSynthesisUtterance(VOICE_TEXT);
+  u.lang='nl-NL'; u.rate=0.95; u.pitch=1.05;
+  const voice=getVoice(); if(voice) u.voice=voice;
+  u.onstart=()=>{ speaking=true; document.getElementById('voice-btn').textContent='⏸ Pauze'; document.getElementById('voice-stop').style.display='inline-block'; };
+  u.onend=u.onerror=()=>{ speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; };
+  synth.speak(u);
+}
+function stopVoice() { synth.cancel(); speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{};
+<\/script>
+
+</body></html>`;
 }
 
 function buildPortretHTML() {
@@ -471,7 +499,35 @@ h1{font-size:40px;color:#B100FF;text-shadow:0 0 25px #B100FF;letter-spacing:4px;
 <div class="badge fan">🐾 FIENOES FAN</div>
 </div>
 <div class="quote">"Hoi! Ik ben Fien." 🐱</div>
-</div></body></html>`;
+</div>
+<!-- VOICE BUTTON -->
+<div id="voice-bar" style="position:fixed;bottom:16px;right:16px;z-index:999;display:flex;gap:8px;align-items:center;">
+  <button id="voice-btn" onclick="toggleVoice()" style="background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px rgba(177,0,255,0.5);">🔊 Lees voor</button>
+  <button id="voice-stop" onclick="stopVoice()" style="display:none;background:rgba(0,0,0,0.6);color:#fff;border:2px solid #FF2EB3;padding:8px 14px;border-radius:50px;font-size:13px;cursor:pointer;">⏹ Stop</button>
+</div>
+<script>
+const VOICE_TEXT = `Hoi! Welkom in Fien's Wereld! Ik ben Fienoes, de kat van Fien. Kies een tegel en begin je avontuur. Hoe meer je doet, hoe meer XP je verdient. En als je alles gedaan hebt... wacht er een verrassing op je!`;
+let synth = window.speechSynthesis;
+let speaking = false;
+function getVoice() {
+  const v = synth.getVoices();
+  return v.find(x => x.lang==='nl-NL'||x.lang==='nl-BE'||x.lang.startsWith('nl')) || v[0];
+}
+function toggleVoice() { if(speaking){stopVoice();return;} startVoice(); }
+function startVoice() {
+  if(synth.speaking) synth.cancel();
+  const u = new SpeechSynthesisUtterance(VOICE_TEXT);
+  u.lang='nl-NL'; u.rate=0.95; u.pitch=1.05;
+  const voice=getVoice(); if(voice) u.voice=voice;
+  u.onstart=()=>{ speaking=true; document.getElementById('voice-btn').textContent='⏸ Pauze'; document.getElementById('voice-stop').style.display='inline-block'; };
+  u.onend=u.onerror=()=>{ speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; };
+  synth.speak(u);
+}
+function stopVoice() { synth.cancel(); speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{};
+<\/script>
+
+</body></html>`;
 }
 
 function buildOepsHTML() {
@@ -490,7 +546,35 @@ p{color:#666;font-size:16px}
 <img src="../assets/fienoes-plonst.png" alt="Fienoes Plonst!">
 <h1>💦 Oeps! Fienoes plonst!</h1>
 <p>Gemist: 2X — maar Fienoes geeft nooit op! 😎</p>
-</div></body></html>`;
+</div>
+<!-- VOICE BUTTON -->
+<div id="voice-bar" style="position:fixed;bottom:16px;right:16px;z-index:999;display:flex;gap:8px;align-items:center;">
+  <button id="voice-btn" onclick="toggleVoice()" style="background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px rgba(177,0,255,0.5);">🔊 Lees voor</button>
+  <button id="voice-stop" onclick="stopVoice()" style="display:none;background:rgba(0,0,0,0.6);color:#fff;border:2px solid #FF2EB3;padding:8px 14px;border-radius:50px;font-size:13px;cursor:pointer;">⏹ Stop</button>
+</div>
+<script>
+const VOICE_TEXT = `Hoi! Welkom in Fien's Wereld! Ik ben Fienoes, de kat van Fien. Kies een tegel en begin je avontuur. Hoe meer je doet, hoe meer XP je verdient. En als je alles gedaan hebt... wacht er een verrassing op je!`;
+let synth = window.speechSynthesis;
+let speaking = false;
+function getVoice() {
+  const v = synth.getVoices();
+  return v.find(x => x.lang==='nl-NL'||x.lang==='nl-BE'||x.lang.startsWith('nl')) || v[0];
+}
+function toggleVoice() { if(speaking){stopVoice();return;} startVoice(); }
+function startVoice() {
+  if(synth.speaking) synth.cancel();
+  const u = new SpeechSynthesisUtterance(VOICE_TEXT);
+  u.lang='nl-NL'; u.rate=0.95; u.pitch=1.05;
+  const voice=getVoice(); if(voice) u.voice=voice;
+  u.onstart=()=>{ speaking=true; document.getElementById('voice-btn').textContent='⏸ Pauze'; document.getElementById('voice-stop').style.display='inline-block'; };
+  u.onend=u.onerror=()=>{ speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; };
+  synth.speak(u);
+}
+function stopVoice() { synth.cancel(); speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{};
+<\/script>
+
+</body></html>`;
 }
 
 function buildUitleggersHTML() {
@@ -538,7 +622,35 @@ h1{text-align:center;font-size:28px;color:#FF9500;text-shadow:0 0 20px #FF9500;m
 <div class="speech">💬 "Fouten maken is oefenen. Ik heb dit ook moeten leren. Jij kan het ook — echt!"</div>
 </div>
 </div>
-</div></body></html>`;
+</div>
+<!-- VOICE BUTTON -->
+<div id="voice-bar" style="position:fixed;bottom:16px;right:16px;z-index:999;display:flex;gap:8px;align-items:center;">
+  <button id="voice-btn" onclick="toggleVoice()" style="background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px rgba(177,0,255,0.5);">🔊 Lees voor</button>
+  <button id="voice-stop" onclick="stopVoice()" style="display:none;background:rgba(0,0,0,0.6);color:#fff;border:2px solid #FF2EB3;padding:8px 14px;border-radius:50px;font-size:13px;cursor:pointer;">⏹ Stop</button>
+</div>
+<script>
+const VOICE_TEXT = `Hoi! Welkom in Fien's Wereld! Ik ben Fienoes, de kat van Fien. Kies een tegel en begin je avontuur. Hoe meer je doet, hoe meer XP je verdient. En als je alles gedaan hebt... wacht er een verrassing op je!`;
+let synth = window.speechSynthesis;
+let speaking = false;
+function getVoice() {
+  const v = synth.getVoices();
+  return v.find(x => x.lang==='nl-NL'||x.lang==='nl-BE'||x.lang.startsWith('nl')) || v[0];
+}
+function toggleVoice() { if(speaking){stopVoice();return;} startVoice(); }
+function startVoice() {
+  if(synth.speaking) synth.cancel();
+  const u = new SpeechSynthesisUtterance(VOICE_TEXT);
+  u.lang='nl-NL'; u.rate=0.95; u.pitch=1.05;
+  const voice=getVoice(); if(voice) u.voice=voice;
+  u.onstart=()=>{ speaking=true; document.getElementById('voice-btn').textContent='⏸ Pauze'; document.getElementById('voice-stop').style.display='inline-block'; };
+  u.onend=u.onerror=()=>{ speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; };
+  synth.speak(u);
+}
+function stopVoice() { synth.cancel(); speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{};
+<\/script>
+
+</body></html>`;
 }
 
 function buildEmpathyHTML() {
@@ -558,6 +670,34 @@ p{color:#ccc;font-size:15px;max-width:500px;line-height:1.6;margin-bottom:24px}
 <p>De Empathy Radar Quest PDF bevat het volledige interactieve werkboek. Klik hieronder om het te openen in een nieuw tabblad.</p>
 <a class="btn" href="https://drive.google.com/file/d/1_empathy_radar_quest/view" target="_blank" onclick="this.textContent='Bezig met laden...'">📄 Open Empathy Radar Quest PDF</a>
 <div class="note">Het PDF-bestand opent in een nieuw tabblad.</div>
+
+<!-- VOICE BUTTON -->
+<div id="voice-bar" style="position:fixed;bottom:16px;right:16px;z-index:999;display:flex;gap:8px;align-items:center;">
+  <button id="voice-btn" onclick="toggleVoice()" style="background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px rgba(177,0,255,0.5);">🔊 Lees voor</button>
+  <button id="voice-stop" onclick="stopVoice()" style="display:none;background:rgba(0,0,0,0.6);color:#fff;border:2px solid #FF2EB3;padding:8px 14px;border-radius:50px;font-size:13px;cursor:pointer;">⏹ Stop</button>
+</div>
+<script>
+const VOICE_TEXT = `Hoi! Welkom in Fien's Wereld! Ik ben Fienoes, de kat van Fien. Kies een tegel en begin je avontuur. Hoe meer je doet, hoe meer XP je verdient. En als je alles gedaan hebt... wacht er een verrassing op je!`;
+let synth = window.speechSynthesis;
+let speaking = false;
+function getVoice() {
+  const v = synth.getVoices();
+  return v.find(x => x.lang==='nl-NL'||x.lang==='nl-BE'||x.lang.startsWith('nl')) || v[0];
+}
+function toggleVoice() { if(speaking){stopVoice();return;} startVoice(); }
+function startVoice() {
+  if(synth.speaking) synth.cancel();
+  const u = new SpeechSynthesisUtterance(VOICE_TEXT);
+  u.lang='nl-NL'; u.rate=0.95; u.pitch=1.05;
+  const voice=getVoice(); if(voice) u.voice=voice;
+  u.onstart=()=>{ speaking=true; document.getElementById('voice-btn').textContent='⏸ Pauze'; document.getElementById('voice-stop').style.display='inline-block'; };
+  u.onend=u.onerror=()=>{ speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; };
+  synth.speak(u);
+}
+function stopVoice() { synth.cancel(); speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{};
+<\/script>
+
 </body></html>`;
 }
 
@@ -619,5 +759,33 @@ document.addEventListener('keydown', (e) => {
 
 initXP();
 </script>
+
+<!-- VOICE BUTTON -->
+<div id="voice-bar" style="position:fixed;bottom:16px;right:16px;z-index:999;display:flex;gap:8px;align-items:center;">
+  <button id="voice-btn" onclick="toggleVoice()" style="background:linear-gradient(135deg,#B100FF,#FF2EB3);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px rgba(177,0,255,0.5);">🔊 Lees voor</button>
+  <button id="voice-stop" onclick="stopVoice()" style="display:none;background:rgba(0,0,0,0.6);color:#fff;border:2px solid #FF2EB3;padding:8px 14px;border-radius:50px;font-size:13px;cursor:pointer;">⏹ Stop</button>
+</div>
+<script>
+const VOICE_TEXT = `Hoi! Welkom in Fien's Wereld! Ik ben Fienoes, de kat van Fien. Kies een tegel en begin je avontuur. Hoe meer je doet, hoe meer XP je verdient. En als je alles gedaan hebt... wacht er een verrassing op je!`;
+let synth = window.speechSynthesis;
+let speaking = false;
+function getVoice() {
+  const v = synth.getVoices();
+  return v.find(x => x.lang==='nl-NL'||x.lang==='nl-BE'||x.lang.startsWith('nl')) || v[0];
+}
+function toggleVoice() { if(speaking){stopVoice();return;} startVoice(); }
+function startVoice() {
+  if(synth.speaking) synth.cancel();
+  const u = new SpeechSynthesisUtterance(VOICE_TEXT);
+  u.lang='nl-NL'; u.rate=0.95; u.pitch=1.05;
+  const voice=getVoice(); if(voice) u.voice=voice;
+  u.onstart=()=>{ speaking=true; document.getElementById('voice-btn').textContent='⏸ Pauze'; document.getElementById('voice-stop').style.display='inline-block'; };
+  u.onend=u.onerror=()=>{ speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; };
+  synth.speak(u);
+}
+function stopVoice() { synth.cancel(); speaking=false; document.getElementById('voice-btn').textContent='🔊 Lees voor'; document.getElementById('voice-stop').style.display='none'; }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{};
+<\/script>
+
 </body>
 </html>
