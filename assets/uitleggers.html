@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juf Emma, Veerle & Benedict</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(ellipse at center, #1a0833, #050010);
+  color: #fff; min-height: 100vh; padding: 20px;
+}
+h1 {
+  text-align: center; font-size: 20px; color: #00AFFF;
+  text-shadow: 0 0 15px #00AFFF; margin-bottom: 6px; letter-spacing: 2px;
+}
+.sub {
+  text-align: center; font-size: 13px; color: #888; margin-bottom: 20px;
+}
+.team-img {
+  width: 100%; max-width: 600px; display: block; margin: 0 auto 24px;
+  border-radius: 16px; border: 3px solid #00AFFF;
+  box-shadow: 0 0 25px rgba(0,175,255,0.4);
+}
+.persons {
+  display: flex; flex-direction: column; gap: 16px; max-width: 600px; margin: 0 auto;
+}
+.person {
+  background: rgba(0,0,0,0.5);
+  border: 2px solid rgba(0,175,255,0.4);
+  border-radius: 16px; padding: 16px 20px;
+  cursor: pointer; transition: all 0.2s;
+}
+.person:hover { border-color: #00AFFF; box-shadow: 0 0 15px rgba(0,175,255,0.3); transform: translateY(-2px); }
+.person.active { border-color: #FF2EB3; box-shadow: 0 0 20px rgba(255,46,179,0.4); }
+.person-name {
+  font-size: 16px; font-weight: bold; color: #00AFFF;
+  text-shadow: 0 0 8px #00AFFF; margin-bottom: 4px;
+}
+.person-role { font-size: 12px; color: #888; margin-bottom: 10px; }
+.speech-bubble {
+  display: none; background: rgba(255,46,179,0.1);
+  border: 2px solid #FF2EB3; border-radius: 12px;
+  padding: 12px 16px; font-size: 14px; line-height: 1.6;
+  color: #fff; margin-top: 10px;
+}
+.speech-bubble.show { display: block; }
+.tip-label {
+  font-size: 11px; color: #FF2EB3; font-weight: bold;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+</style>
+</head>
+<body>
+<h1>👩‍🏫 JUF EMMA, VEERLE & BENEDICT</h1>
+<div class="sub">Klik op een persoon — zij leggen het uit!</div>
+
+<img class="team-img" src="team.png" alt="Juf Emma, Veerle en Benedict">
+
+<div class="persons">
+  <div class="person" onclick="toggle(this, 'emma')">
+    <div class="person-name">👩‍🏫 Juf Emma</div>
+    <div class="person-role">Leerkracht · Begeleider · Motivator</div>
+    <div class="speech-bubble" id="emma">
+      <div class="tip-label">💬 Juf Emma zegt:</div>
+      "Hoi! Ik ben Juf Emma. Als je ergens niet uitkomt, vraag het gerust! Samen komen we er altijd uit. Onthoud: fouten maken is leren. En Fienoes maakt ook fouten — kijk maar naar de kattenbak! 😄"
+    </div>
+  </div>
+
+  <div class="person" onclick="toggle(this, 'veerle')">
+    <div class="person-name">🌟 Veerle</div>
+    <div class="person-role">Klasgenoot · Vriendin · Doorzetter</div>
+    <div class="speech-bubble" id="veerle">
+      <div class="tip-label">💬 Veerle zegt:</div>
+      "Hey! Ik ben Veerle. Ik snap het ook niet altijd meteen — maar ik geef niet op. Als ik ergens mee zit, schrijf ik het op en vraag ik het later. Tip: lees de vraag twee keer voor je antwoordt!"
+    </div>
+  </div>
+
+  <div class="person" onclick="toggle(this, 'benedict')">
+    <div class="person-name">⚡ Benedict</div>
+    <div class="person-role">Klasgenoot · Creatief denker · Teamspeler</div>
+    <div class="speech-bubble" id="benedict">
+      <div class="tip-label">💬 Benedict zegt:</div>
+      "Yo! Ik ben Benedict. Ik denk altijd even na voordat ik begin. Mijn geheim? Ik maak het eerst klein: één stap tegelijk. Dan lijkt alles minder moeilijk. En als het lukt — geef jezelf een punt! 🎯"
+    </div>
+  </div>
+</div>
+
+<script>
+function toggle(el, id) {
+  const bubble = document.getElementById(id);
+  const isOpen = bubble.classList.contains('show');
+  // close all
+  document.querySelectorAll('.speech-bubble').forEach(b => b.classList.remove('show'));
+  document.querySelectorAll('.person').forEach(p => p.classList.remove('active'));
+  if (!isOpen) {
+    bubble.classList.add('show');
+    el.classList.add('active');
+  }
+}
+</script>
+</body>
+</html>

@@ -342,6 +342,10 @@ const APP_URLS = {
   empathie:     'assets/empathie.html',
   huiswerk:     'assets/huiswerk.html',
   empathy:      'assets/empathy-page.html',
+  filmpjes:     'assets/filmpjes.html',
+  oeps:         'assets/oeps.html',
+  portret:      'assets/portret.html',
+  uitleggers:   'assets/uitleggers.html',
 };
 
 // ── XP System ───────────────────────────────────────────────────────────────
@@ -558,12 +562,7 @@ p{color:#ccc;font-size:15px;max-width:500px;line-height:1.6;margin-bottom:24px}
 }
 
 // ── App loading ──────────────────────────────────────────────────────────────
-const INLINE_BUILDERS = {
-  filmpjes:   buildFilmpjesHTML,
-  portret:    buildPortretHTML,
-  oeps:       buildOepsHTML,
-  uitleggers: buildUitleggersHTML,
-};
+const INLINE_BUILDERS = {}; // All apps now use standalone HTML files via APP_URLS
 
 let currentBlobUrl = null;
 
